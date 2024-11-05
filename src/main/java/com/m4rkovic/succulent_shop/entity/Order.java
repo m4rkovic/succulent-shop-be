@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Entity
+@SuperBuilder
 @Table(name = "_order")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Order extends AbstractEntity {

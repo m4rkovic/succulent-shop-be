@@ -26,5 +26,6 @@ public interface ProductService {
 
     public void deleteById(Long productId);
 
+    public List<Product> findProductsByIds(List<Long> productIds);
     Page<Product> searchProducts(ProductSearchCriteria criteria, int page, int size);
 }

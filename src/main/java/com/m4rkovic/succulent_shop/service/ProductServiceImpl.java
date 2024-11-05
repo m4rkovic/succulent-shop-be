@@ -101,6 +101,27 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    // FIND PRODUCTS BY IDS
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        log.debug("Retrieving products with IDs: {}", productIds);
+
+        // Fetch products based on the provided IDs
+        List<Product> products = productRepository.findAllById(productIds);
+
+        // Validate if all requested products are found
+        if (products.size() != productIds.size()) {
+            List<Long> foundIds = products.stream().map(Product::getId).toList();
+            List<Long> missingIds = productIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+            throw new ResourceNotFoundException(String.format("Products not found for IDs: %s", missingIds));
+        }
+
+        return products;
+    }
+
     // SEARCH
     @Override
     @Transactional(readOnly = true)

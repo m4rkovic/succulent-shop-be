@@ -13,7 +13,7 @@ public interface OrderService {
 
     public Order findById(Long id);
 
-    public Order save(User user, List<Product> products);
+    public Order save(Long userId, List<Long> productIds);
 
     public void deleteById(Long orderId);
 }

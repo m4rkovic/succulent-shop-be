@@ -37,5 +37,5 @@ public class OrderDTO {
     private OrderStatus orderStatus;
 
     @NotNull(message = "Address is required")
-    private AddressDTO address;
+    private String address;
 }
