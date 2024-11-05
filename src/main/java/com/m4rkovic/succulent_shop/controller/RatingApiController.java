@@ -55,22 +55,18 @@ public class RatingApiController {
         log.debug("Creating new rating with data: {}", ratingDto);
 
         try {
-            // Validate using custom validator
             ratingValidator.validateAndThrow(ratingDto);
 
-            // Retrieve and validate user
             User user = userService.findById(ratingDto.getUserId());
             if (user == null) {
                 throw new ResourceNotFoundException("User not found with id: " + ratingDto.getUserId());
             }
 
-            // Retrieve and validate product
             Product product = productService.findById(ratingDto.getProductId());
             if (product == null) {
                 throw new ResourceNotFoundException("Product not found with id: " + ratingDto.getProductId());
             }
 
-            // Create rating with validated data
             Rating savedRating = ratingService.save(
                     user,
                     product,
@@ -79,10 +75,8 @@ public class RatingApiController {
                     new Date()
             );
 
-            // Convert to response DTO
             RatingResponse response = RatingResponse.fromEntity(savedRating);
 
-            // Build location URI
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest()
                     .path("/{id}")
