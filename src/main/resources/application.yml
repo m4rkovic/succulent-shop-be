@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/succulentShop
+    username: root
+    password: password
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
+      database: mysql
+      database-platform: org.hibernate.dialect.MySQL8InnoDBDialect
+      globally_quoted_identifiers: true
+
+#  springdoc.api-docs.path=/api-docs
+#  springdoc.swagger-ui.path=/swagger-ui.html
+#  springdoc.swagger-ui.operationsSorter=method
