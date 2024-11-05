@@ -1,66 +1,41 @@
 package com.m4rkovic.succulent_shop.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderDTO {
 
+    @NotNull(message = "User ID is required")
     private Long userId;
-    private List<Long> productsIds; // List of product IDs
+
+    @JsonProperty("productsIds")
+    @NotNull(message = "Product IDs list is required")
+    private List<Long> productsIds;
+
+    @NotBlank(message = "Order code is required")
+    @Size(min = 5, max = 20, message = "Order code must be between 5 and 20 characters")
     private String orderCode;
+
+    @NotNull(message = "Order date is required")
     private Date orderDate;
+
+    @NotNull(message = "Order status is required")
     private OrderStatus orderStatus;
+
+    @NotNull(message = "Address is required")
     private AddressDTO address;
-
-    // Getters and Setters
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public List<Long> getProductsIds() {
-        return productsIds;
-    }
-
-    public void setProductsIds(List<Long> productsIdss) {
-        this.productsIds = productsIdss;
-    }
-
-    public String getOrderCode() {
-        return orderCode;
-    }
-
-    public void setOrderCode(String orderCode) {
-        this.orderCode = orderCode;
-    }
-
-    public Date getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    public AddressDTO getAddress() {
-        return address;
-    }
-
-    public void setAddress(AddressDTO address) {
-        this.address = address;
-    }
 }
