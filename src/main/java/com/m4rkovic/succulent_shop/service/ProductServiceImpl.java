@@ -10,7 +10,7 @@ import com.m4rkovic.succulent_shop.enumerator.ProductType;
 import com.m4rkovic.succulent_shop.enumerator.ToolType;
 import com.m4rkovic.succulent_shop.exceptions.CreationException;
 import com.m4rkovic.succulent_shop.exceptions.DeleteException;
-import com.m4rkovic.succulent_shop.exceptions.ProductUpdateException;
+import com.m4rkovic.succulent_shop.exceptions.UpdateException;
 import com.m4rkovic.succulent_shop.mapper.ProductMapper;
 import com.m4rkovic.succulent_shop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
             productMapper.updateEntityFromDTO(existingProduct, productDTO);
             return productRepository.save(existingProduct);
         } catch (DataIntegrityViolationException e) {
-            throw new ProductUpdateException(String.format("Failed to update product with id: %d", id), e);
+            throw new UpdateException(String.format("Failed to update product with id: %d", id), e);
         }
     }
 

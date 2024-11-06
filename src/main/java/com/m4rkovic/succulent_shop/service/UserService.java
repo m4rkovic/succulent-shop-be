@@ -1,19 +1,25 @@
 package com.m4rkovic.succulent_shop.service;
 
+import com.m4rkovic.succulent_shop.dto.UserDTO;
 import com.m4rkovic.succulent_shop.entity.User;
+import com.m4rkovic.succulent_shop.enumerator.Role;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 public interface UserService {
+    List<User> findAll();
 
-    public List<User> findAll();
+    User findById(Long id);
 
-    public User findById(Long id);
+    User save(String email, String firstname, String lastname,
+                     String address, Role role, String password);
 
-    public User save(User user);
+    User update(Long id, UserDTO userDTO);
 
-    public void deleteById(Long userId);
+    void deleteById(Long userId);
 
+    User findByEmail(String email);
 }

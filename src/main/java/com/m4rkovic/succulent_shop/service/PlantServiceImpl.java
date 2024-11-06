@@ -26,8 +26,8 @@ public class PlantServiceImpl implements PlantService {
 
     private final PlantRepository plantRepository;
     private final FileStorageService fileStorageService;
-    private final PlantValidator plantValidator;
 
+    private final PlantValidationService validationService;
     private final PlantMapper plantMapper;
 
     // FIND ALL
@@ -61,7 +61,7 @@ public class PlantServiceImpl implements PlantService {
                 .categoryId(category != null ? category.getId() : null)
                 .build();
 
-        validatePlantDto(plantDto);
+        validationService.validatePlantDTO(plantDto);
 
         try {
             Plant plant = plantMapper.toEntity(plantDto);
@@ -112,18 +112,6 @@ public class PlantServiceImpl implements PlantService {
         }
 
         plantRepository.deleteById(plantId);
-    }
-
-    // VALIDATE
-    public void validatePlantDto(PlantDTO plantDto) {
-        if (plantDto == null) {
-            throw new ValidationException("Plant data cannot be null!");
-        }
-
-        List<String> violations = plantValidator.validate(plantDto);
-        if (!violations.isEmpty()) {
-            throw new ValidationException("Plant validation failed ", violations);
-        }
     }
 
 }

@@ -4,52 +4,66 @@ import com.m4rkovic.succulent_shop.entity.Category;
 import com.m4rkovic.succulent_shop.repository.CategoryRepository;
 import com.m4rkovic.succulent_shop.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/categories")
 @RequiredArgsConstructor
-@CrossOrigin
 public class CategoryApiController {
 
-    private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
 
-    @GetMapping("/{id}")
-    public Category getCategory(@PathVariable Long id) {
-        return categoryService.findById(id);
-    }
-
     @GetMapping
-    public List<Category> getCategories() {
-        return categoryService.findAll();
+    public ResponseEntity<List<Category>> getAllCategories() {
+        List<Category> categories = categoryService.findAll();
+        return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
-    @PostMapping("/createCategory")
-    public ResponseEntity createCategory(@RequestBody Category category) throws URISyntaxException {
-        Category savedCategory = categoryService.save(category);
-        return ResponseEntity.created(new URI("/categories/" + savedCategory.getId())).body(savedCategory);
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+        try {
+            Category category = categoryService.findById(id);
+            return new ResponseEntity<>(category, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        try {
+            Category savedCategory = categoryService.save(category);
+            return new ResponseEntity<>(savedCategory, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateProduct(@PathVariable Long id, @RequestBody Category category) {
-        Category currenctCategory = categoryService.findById(id);
-        currenctCategory.setCategoryName(category.getCategoryName());
-        currenctCategory.setCategoryDesc(category.getCategoryDesc());
-       // currenctCategory = categoryRepository.save(category);
-
-        return ResponseEntity.ok(currenctCategory);
+    public ResponseEntity<Category> updateCategory(
+            @PathVariable Long id,
+            @RequestBody Category category) {
+        try {
+            categoryService.findById(id);
+            category.setId(id);
+            Category updatedCategory = categoryService.save(category);
+            return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteCategory(@PathVariable Long id) {
-        categoryService.deleteById(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        try {
+            categoryService.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

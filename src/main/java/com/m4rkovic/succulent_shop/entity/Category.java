@@ -6,11 +6,13 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
+@SuperBuilder
 @Table(name="_category")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Category extends AbstractEntity {
