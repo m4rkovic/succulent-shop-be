@@ -1,125 +1,125 @@
 package com.m4rkovic.succulent_shop.controller;
 
-import com.m4rkovic.succulent_shop.dto.AddressDTO;
 import com.m4rkovic.succulent_shop.dto.OrderDTO;
 import com.m4rkovic.succulent_shop.entity.Order;
-import com.m4rkovic.succulent_shop.entity.Product;
-import com.m4rkovic.succulent_shop.entity.User;
-import com.m4rkovic.succulent_shop.repository.OrderRepository;
+import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
+import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
+import com.m4rkovic.succulent_shop.response.OrderResponse;
 import com.m4rkovic.succulent_shop.service.OrderService;
-import com.m4rkovic.succulent_shop.service.ProductService;
-import com.m4rkovic.succulent_shop.service.UserService;
+import com.m4rkovic.succulent_shop.validator.OrderValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
+@Validated
+@Tag(name = "Order Controller", description = "Order management APIs")
 @CrossOrigin
+@Slf4j
 public class OrderApiController {
-//
-//    private final OrderRepository orderRepository;
-//    private final OrderService orderService;
-//
-//    private final UserService userService;
-//    private final ProductService productService;
-//
-//    @GetMapping("/{id}")
-//    public Order getOrders(@PathVariable Long id) {
-//        return orderService.findById(id);
-//    }
-//
-//    @GetMapping("/allOrders")
-//    public List<Order> getOrders() {
-//        return orderService.findAll();
-//    }
-//
-//    @PostMapping("/createOrder")
-//    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) throws URISyntaxException {
-//        System.out.println("Received OrderDto: " + orderDTO);
-//        System.out.println("Received user id: " + orderDTO.getUserId());
-//        System.out.println("Received product ids: " + orderDTO.getProductsIds());
-//
-//        if (orderDTO.getUserId() == null) {
-//            return ResponseEntity.badRequest().body(null);
-//        }
-//
-//        if (orderDTO.getProductsIds() == null || orderDTO.getProductsIds().isEmpty()) {
-//            return ResponseEntity.badRequest().body(null); // Ensure the product list is not empty
-//        }
-//
-//        User user = userService.findById(orderDTO.getUserId());
-//        if (user == null) {
-//            return ResponseEntity.badRequest().body(null); // Return bad request if user is not found
-//        }
-//
-//        // Retrieve all products based on the provided product IDs
-//        List<Product> products = new ArrayList<>();
-//        for (Long productId : orderDTO.getProductsIds()) {
-//            Product product = productService.findById(productId);
-//            if (product == null) {
-//                return ResponseEntity.badRequest().body(null); // Return bad request if any product is not found
-//            }
-//            products.add(product);
-//        }
-//
-//        // Map AddressDTO to Address entity
-////        Address address = new Address();
-////        AddressDTO addressDTO = orderDTO.getAddress();
-////        if (addressDTO != null) {
-////            address.setStreet(addressDTO.getStreet());
-////            address.setCity(addressDTO.getCity());
-////            address.setPostalCode(addressDTO.getPostalCode());
-////            address.setCountry(addressDTO.getCountry());
-////        }
-//
-//        Order savedOrder = orderService.save(user, products); // Pass the address to the service
-//
-//        // Create and populate OrderDTO to return
-//        OrderDTO responseDto = new OrderDTO();
-//        responseDto.setUserId(user.getId());
-//        responseDto.setProductsIds(orderDTO.getProductsIds());
-//        responseDto.setOrderCode(savedOrder.getOrderCode());
-//        responseDto.setOrderDate(savedOrder.getOrderDate());
-//        responseDto.setOrderStatus(savedOrder.getOrderStatus());
-//
-//        // Set the address details in response DTO if needed
-////        if (savedOrder.getAddress() != null) {
-////            Address savedAddress = savedOrder.getAddress();
-////            AddressDTO responseAddressDTO = new AddressDTO();
-////            responseAddressDTO.setStreet(savedAddress.getStreet());
-////            responseAddressDTO.setCity(savedAddress.getCity());
-////            responseAddressDTO.setPostalCode(savedAddress.getPostalCode());
-////            responseAddressDTO.setCountry(savedAddress.getCountry());
-////            responseDto.setAddress(responseAddressDTO);
-////        }
-//
-//        return ResponseEntity.created(new URI("/orders/" + savedOrder.getId())).body(responseDto);
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity updateOrder(@PathVariable Long id, @RequestBody Order order) {
-//        Order currentOrder = orderService.findById(id);
-//        currentOrder.setOrderStatus(order.getOrderStatus());
-//        currentOrder.setOrderUpdateDate(new Date(System.currentTimeMillis()));
-//        currentOrder.setOrderUpdateLog(order.getOrderUpdateLog() + "Order updated! At: " + order.getOrderUpdateDate() + "Status: " + order.getOrderStatus() + "\n");
-//        //currentOrder.setAddress(order.getAddress());
-//        currentOrder.setProducts(order.getProducts());
-//        currentOrder = orderRepository.save(order);
-//
-//        return ResponseEntity.ok(currentOrder);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity deleteOrder(@PathVariable Long id) {
-//        orderService.deleteById(id);
-//        return ResponseEntity.ok().build();
-//    }
+
+    private final OrderService orderService;
+    private final OrderValidator orderValidator;
+
+    // FIND BY ID
+    @Operation(summary = "Get an order by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order found"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponse> getOrder(
+            @Parameter(description = "Order ID", required = true)
+            @PathVariable Long id) {
+        Order order = orderService.findById(id);
+        return ResponseEntity.ok(OrderResponse.fromEntity(order));
+    }
+
+    // FIND ALL
+    @Operation(summary = "Get all orders")
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        List<OrderResponse> orders = orderService.findAll()
+                .stream()
+                .map(OrderResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(orders);
+    }
+
+    // CREATE ORDER
+    @Operation(summary = "Create a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Order created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    @PostMapping
+    public ResponseEntity<OrderResponse> createOrder(
+            @Valid @RequestBody OrderDTO orderDto) {
+        log.debug("Creating new order with data: {}", orderDto);
+
+        try {
+            orderValidator.validateAndThrow(orderDto);
+
+            Order savedOrder = orderService.save(orderDto.getUserId(), orderDto.getProductsIds());
+            OrderResponse response = OrderResponse.fromEntity(savedOrder);
+
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(savedOrder.getId())
+                    .toUri();
+
+            return ResponseEntity.created(location).body(response);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid input in order creation request", e);
+            throw new InvalidDataException("Invalid order data: " + e.getMessage());
+        }
+    }
+
+    // UPDATE ORDER STATUS
+    @Operation(summary = "Update the status of an order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid status provided")
+    })
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @Parameter(description = "Order ID", required = true) @PathVariable Long id,
+            @Parameter(description = "New status for the order", required = true) @RequestBody OrderStatus newStatus) {
+        log.debug("Updating status for order with id: {} to {}", id, newStatus);
+
+        Order updatedOrder = orderService.updateOrderStatus(id, newStatus);
+        return ResponseEntity.ok(OrderResponse.fromEntity(updatedOrder));
+    }
+
+    // DELETE
+    @Operation(summary = "Delete an order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Order deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(
+            @Parameter(description = "Order ID", required = true)
+            @PathVariable Long id) {
+        log.debug("Deleting order: {}", id);
+        orderService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

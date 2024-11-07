@@ -36,17 +36,23 @@ public class Product extends AbstractEntity {
 
     @Column(columnDefinition = "TEXT")
     private String productDesc;
+
+    @Column(nullable = true)
     private PotSize potSize;
     private boolean isPot;
+
+    @Column(nullable = true)
     private int potNumber;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private PotType potType;
 
     @Enumerated(EnumType.STRING)
     private ProductType productType;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private ToolType toolType;
 
     @ManyToMany(mappedBy = "products")

@@ -1,6 +1,7 @@
 package com.m4rkovic.succulent_shop.service;
 
-import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
+import com.m4rkovic.succulent_shop.dto.BulkProductRequestDTO;
+import com.m4rkovic.succulent_shop.exceptions.*;
 import com.m4rkovic.succulent_shop.dto.ProductDTO;
 import com.m4rkovic.succulent_shop.entity.Plant;
 import com.m4rkovic.succulent_shop.entity.Product;
@@ -8,9 +9,6 @@ import com.m4rkovic.succulent_shop.enumerator.PotSize;
 import com.m4rkovic.succulent_shop.enumerator.PotType;
 import com.m4rkovic.succulent_shop.enumerator.ProductType;
 import com.m4rkovic.succulent_shop.enumerator.ToolType;
-import com.m4rkovic.succulent_shop.exceptions.CreationException;
-import com.m4rkovic.succulent_shop.exceptions.DeleteException;
-import com.m4rkovic.succulent_shop.exceptions.UpdateException;
 import com.m4rkovic.succulent_shop.mapper.ProductMapper;
 import com.m4rkovic.succulent_shop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -107,10 +106,8 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findProductsByIds(List<Long> productIds) {
         log.debug("Retrieving products with IDs: {}", productIds);
 
-        // Fetch products based on the provided IDs
         List<Product> products = productRepository.findAllById(productIds);
 
-        // Validate if all requested products are found
         if (products.size() != productIds.size()) {
             List<Long> foundIds = products.stream().map(Product::getId).toList();
             List<Long> missingIds = productIds.stream()
@@ -120,6 +117,56 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return products;
+    }
+
+    @Override
+    @Transactional
+    public List<Product> bulkImport(List<BulkProductRequestDTO> products) {
+        log.debug("Starting bulk import of {} products", products.size());
+        List<Product> importedProducts = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (int i = 0; i < products.size(); i++) {
+            BulkProductRequestDTO request = products.get(i);
+            try {
+                PotSize potSize = request.getPotSize() != null ?
+                        PotSize.valueOf(request.getPotSize().toUpperCase()) : null;
+                ProductType productType = ProductType.valueOf(request.getProductType().toUpperCase());
+                PotType potType = request.getPotType() != null ?
+                        PotType.valueOf(request.getPotType().toUpperCase()) : null;
+                ToolType toolType = request.getToolType() != null ?
+                        ToolType.valueOf(request.getToolType().toUpperCase()) : null;
+
+                Product savedProduct = save(
+                        request.getPlant(),
+                        request.getProductName(),
+                        request.getProductDesc(),
+                        potSize,
+                        productType,
+                        request.isPot(),
+                        potType,
+                        toolType,
+                        request.getPotNumber(),
+                        request.getPrice()
+                );
+
+                importedProducts.add(savedProduct);
+
+            } catch (Exception e) {
+                String errorMessage = String.format("Error importing product at index %d: %s", i, e.getMessage());
+                errors.add(errorMessage);
+                log.error(errorMessage, e);
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            String errorMessage = String.format("Bulk import completed with %d errors: %s",
+                    errors.size(), String.join("; ", errors));
+            throw new BulkImportException(errorMessage, importedProducts);
+        }
+
+        log.debug("Bulk import completed successfully. Imported {} products", importedProducts.size());
+        return importedProducts;
     }
 
     // SEARCH

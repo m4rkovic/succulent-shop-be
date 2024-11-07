@@ -4,7 +4,8 @@ public enum ProductType {
     DECOR("DECOR"),
     SAPLING("SAPLING"),
     PLANT("PLANT"),
-    ARRANGEMENT("ARRANGEMENT");
+    ARRANGEMENT("ARRANGEMENT"),
+    TOOL("TOOL");
 
     private String code;
 

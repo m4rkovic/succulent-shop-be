@@ -2,6 +2,7 @@ package com.m4rkovic.succulent_shop.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,8 +29,10 @@ public class PlantDTO {
     @Size(min = 2, max = 100, message = "Plant name must be between 2 and 100 characters!")
     private String name;
 
+    @Nullable
     private String plantPhoto;
 
+    @Nullable
     private MultipartFile photoFile;
 
 
@@ -39,7 +42,7 @@ public class PlantDTO {
     @NotBlank(message = "Secondary color is required!")
     private String secondaryColor;
 
-    @JsonIgnore
+//    @JsonIgnore
     @NotBlank(message = "Bloom color is required!")
     private String bloomColor;
 }

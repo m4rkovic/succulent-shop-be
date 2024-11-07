@@ -82,10 +82,8 @@ public class PlantApiController {
         log.debug("Creating new plant with data: {}", plantDto);
 
         try {
-            // Validate using custom validator
             plantValidator.validateAndThrow(plantDto);
 
-            // Convert and validate colors
             Color primaryColor = plantDto.getPrimaryColor() != null ?
                     Color.valueOf(plantDto.getPrimaryColor().toUpperCase()) : null;
             Color secondaryColor = plantDto.getSecondaryColor() != null ?
@@ -93,7 +91,6 @@ public class PlantApiController {
             Color bloomColor = plantDto.getBloomColor() != null ?
                     Color.valueOf(plantDto.getBloomColor().toUpperCase()) : null;
 
-            // Validate category existence
             Category category = categoryService.findById(plantDto.getCategoryId());
             if (category == null) {
                 throw new ResourceNotFoundException("Category not found with id: " + plantDto.getCategoryId());
@@ -101,9 +98,9 @@ public class PlantApiController {
 
             Plant savedPlant = plantService.save(
                     plantDto.getName(),
-                    primaryColor.toString(),
-                    secondaryColor.toString(),
-                    bloomColor.toString(),
+                    primaryColor,
+                    secondaryColor,
+                    bloomColor,
                     photoFile,
                     category
             );

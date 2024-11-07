@@ -3,6 +3,7 @@ package com.m4rkovic.succulent_shop.service;
 import com.m4rkovic.succulent_shop.dto.PlantDTO;
 import com.m4rkovic.succulent_shop.entity.Category;
 import com.m4rkovic.succulent_shop.entity.Plant;
+import com.m4rkovic.succulent_shop.enumerator.Color;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,7 @@ public interface PlantService {
 
     public Plant findById(Long id);
 
-    public Plant save(String name, String primaryColor, String secondaryColor, String bloomColor,
+    public Plant save(String name, Color primaryColor, Color secondaryColor, Color bloomColor,
                       MultipartFile photoFile, Category category);
 
     @Transactional

@@ -31,25 +31,36 @@ public class ProductMapper {
             return null;
         }
 
-        Plant plant = dto.getPlantId() != null ?
-                plantService.findById(dto.getPlantId()) : null;
+        // Retrieve the plant entity based on the plantId provided in DTO
+        Plant plant = dto.getPlantId() != null ? plantService.findById(dto.getPlantId()) : null;
 
+        // Ensure that when `isPot` is true, `potSize` and `potType` are not null
+        PotSize potSize = null;
+        PotType potType = null;
+
+        if (dto.isPot()) {
+            // Only map potSize and potType if the product is a pot
+            if (StringUtils.isNotBlank(dto.getPotSize())) {
+                potSize = PotSize.valueOf(dto.getPotSize().toUpperCase());
+            }
+            if (StringUtils.isNotBlank(dto.getPotType())) {
+                potType = PotType.valueOf(dto.getPotType().toUpperCase());
+            }
+        }
+
+        // Map and build the Product entity
         return Product.builder()
                 .id(dto.getId())
                 .productName(dto.getProductName())
                 .productDesc(dto.getProductDesc())
-                .potSize(StringUtils.isNotBlank(dto.getPotSize()) ?
-                        PotSize.valueOf(dto.getPotSize().toUpperCase()) : null)
-                .productType(StringUtils.isNotBlank(dto.getProductType()) ?
-                        ProductType.valueOf(dto.getProductType().toUpperCase()) : null)
+                .potSize(potSize)  // Set potSize only if valid
+                .productType(StringUtils.isNotBlank(dto.getProductType()) ? ProductType.valueOf(dto.getProductType().toUpperCase()) : null)
                 .isPot(dto.isPot())
-                .potType(StringUtils.isNotBlank(dto.getPotType()) ?
-                        PotType.valueOf(dto.getPotType().toUpperCase()) : null)
-                .toolType(StringUtils.isNotBlank(dto.getToolType()) ?
-                        ToolType.valueOf(dto.getToolType().toUpperCase()) : null)
+                .potType(potType)  // Set potType only if valid
+                .toolType(StringUtils.isNotBlank(dto.getToolType()) ? ToolType.valueOf(dto.getToolType().toUpperCase()) : null)
                 .potNumber(dto.getPotNumber())
                 .price(dto.getPrice())
-                .plant(plant)
+                .plant(plant)  // Set the related plant entity
                 .build();
     }
 
@@ -58,23 +69,19 @@ public class ProductMapper {
             return null;
         }
 
+        // Map Product entity to DTO
         return ProductDTO.builder()
                 .id(entity.getId())
                 .productName(entity.getProductName())
                 .productDesc(entity.getProductDesc())
-                .potSize(entity.getPotSize() != null ?
-                        entity.getPotSize().name() : null)
-                .productType(entity.getProductType() != null ?
-                        entity.getProductType().name() : null)
+                .potSize(entity.getPotSize() != null ? entity.getPotSize().name() : null)
+                .productType(entity.getProductType() != null ? entity.getProductType().name() : null)
                 .isPot(entity.isPot())
-                .potType(entity.getPotType() != null ?
-                        entity.getPotType().name() : null)
-                .toolType(entity.getToolType() != null ?
-                        entity.getToolType().name() : null)
+                .potType(entity.getPotType() != null ? entity.getPotType().name() : null)
+                .toolType(entity.getToolType() != null ? entity.getToolType().name() : null)
                 .potNumber(entity.getPotNumber())
                 .price(entity.getPrice())
-                .plantId(entity.getPlant() != null ?
-                        entity.getPlant().getId() : null)
+                .plantId(entity.getPlant() != null ? entity.getPlant().getId() : null)
                 .build();
     }
 
@@ -83,6 +90,7 @@ public class ProductMapper {
             return;
         }
 
+        // Update fields from DTO to entity
         if (StringUtils.isNotBlank(dto.getProductName())) {
             entity.setProductName(dto.getProductName());
         }
@@ -101,7 +109,7 @@ public class ProductMapper {
         if (StringUtils.isNotBlank(dto.getToolType())) {
             entity.setToolType(ToolType.valueOf(dto.getToolType().toUpperCase()));
         }
-        if (dto.isPot() == true) {
+        if (dto.isPot()) {
             entity.setPotNumber(dto.getPotNumber());
         }
         if (dto.getPrice() != null) {

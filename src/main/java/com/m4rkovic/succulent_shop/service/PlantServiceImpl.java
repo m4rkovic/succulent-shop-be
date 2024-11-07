@@ -50,13 +50,13 @@ public class PlantServiceImpl implements PlantService {
     // SAVE
     @Override
     @Transactional
-    public Plant save(String name, String primaryColor, String secondaryColor, String bloomColor,
+    public Plant save(String name, Color primaryColor, Color secondaryColor, Color bloomColor,
                       MultipartFile photoFile, Category category) {
         PlantDTO plantDto = PlantDTO.builder()
                 .name(name)
-                .primaryColor(primaryColor)
-                .secondaryColor(secondaryColor)
-                .bloomColor(bloomColor)
+                .primaryColor(primaryColor != null ? primaryColor.name() : null)
+                .secondaryColor(secondaryColor != null ? secondaryColor.name() : null)
+                .bloomColor(bloomColor != null ? bloomColor.name() : null)
                 .photoFile(photoFile)
                 .categoryId(category != null ? category.getId() : null)
                 .build();

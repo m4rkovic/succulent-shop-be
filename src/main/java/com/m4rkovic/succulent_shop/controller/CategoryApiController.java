@@ -1,69 +1,128 @@
 package com.m4rkovic.succulent_shop.controller;
 
+import com.m4rkovic.succulent_shop.dto.CategoryDTO;
 import com.m4rkovic.succulent_shop.entity.Category;
-import com.m4rkovic.succulent_shop.repository.CategoryRepository;
+import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
+import com.m4rkovic.succulent_shop.response.CategoryResponse;
 import com.m4rkovic.succulent_shop.service.CategoryService;
+import com.m4rkovic.succulent_shop.validator.CategoryValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
+@Validated
+@Tag(name = "Category Controller", description = "Category management APIs")
+@CrossOrigin
+@Slf4j
 public class CategoryApiController {
 
     private final CategoryService categoryService;
+    private final CategoryValidator categoryValidator;
 
-    @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.findAll();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
-    }
-
+    // FIND BY ID
+    @Operation(summary = "Get a category by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Category found"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
-        try {
-            Category category = categoryService.findById(id);
-            return new ResponseEntity<>(category, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<CategoryResponse> getCategory(
+            @Parameter(description = "Category ID", required = true)
+            @PathVariable Long id) {
+        Category category = categoryService.findById(id);
+        return ResponseEntity.ok(CategoryResponse.fromEntity(category));
     }
 
+    // FIND ALL
+    @Operation(summary = "Get all categories")
+    @GetMapping
+    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+        List<CategoryResponse> categories = categoryService.findAll()
+                .stream()
+                .map(CategoryResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categories);
+    }
+
+    // ADD CATEGORY
+    @Operation(summary = "Create a new category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Category created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CategoryDTO categoryDto) {
+        log.debug("Creating new category with data: {}", categoryDto);
+
         try {
-            Category savedCategory = categoryService.save(category);
-            return new ResponseEntity<>(savedCategory, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            // Validate using custom validator
+            categoryValidator.validateAndThrow(categoryDto);
+
+            Category savedCategory = categoryService.save(categoryDto);
+
+            CategoryResponse response = CategoryResponse.fromEntity(savedCategory);
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(savedCategory.getId())
+                    .toUri();
+
+            return ResponseEntity.created(location).body(response);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid data in category creation request", e);
+            throw new InvalidDataException("Invalid category data: " + e.getMessage());
         }
     }
 
+    // UPDATE
+    @Operation(summary = "Update a category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Category updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Category not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @Parameter(description = "Category ID", required = true)
             @PathVariable Long id,
-            @RequestBody Category category) {
-        try {
-            categoryService.findById(id);
-            category.setId(id);
-            Category updatedCategory = categoryService.save(category);
-            return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+            @Valid @RequestBody CategoryDTO categoryDto) {
+        log.debug("Updating category {} with data: {}", id, categoryDto);
+
+        categoryDto.setId(id);
+        Category updatedCategory = categoryService.save(categoryDto);
+        return ResponseEntity.ok(CategoryResponse.fromEntity(updatedCategory));
     }
 
+    // DELETE
+    @Operation(summary = "Delete a category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        try {
-            categoryService.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> deleteCategory(
+            @Parameter(description = "Category ID", required = true)
+            @PathVariable Long id) {
+        log.debug("Deleting category: {}", id);
+        categoryService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

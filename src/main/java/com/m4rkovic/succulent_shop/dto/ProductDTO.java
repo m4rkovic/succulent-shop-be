@@ -26,12 +26,12 @@ public class ProductDTO {
     @Size(max = 1000, message = "Product description cannot exceed 1000 characters")
     private String productDesc;
 
-    @Pattern
-            (regexp = "^(SMALL|MEDIUM|LARGE|EXTRA_LARGE)$", message = "Invalid pot size")
+
+    @Pattern(regexp = "^(SMALL|MEDIUM|LARGE|EXTRA_LARGE)$", message = "Invalid pot size")
     private String potSize;
 
     @NotBlank(message = "Product type is required")
-    @Pattern(regexp = "^(PLANT|POT|TOOL)$", message = "Invalid product type")
+    @Pattern(regexp = "^(DECOR|SAPLING|PLANT|ARRANGEMENT|TOOL)$", message = "Invalid product type")
     private String productType;
 
     private boolean isPot;
@@ -44,7 +44,7 @@ public class ProductDTO {
     @Digits(integer = 6, fraction = 2, message = "Price must have at most 6 digits and 2 decimal places")
     private BigDecimal price;
 
-    @Pattern(regexp = "^(CERAMIC|PLASTIC|TERRACOTTA)$", message = "Invalid pot type")
+    @Pattern(regexp = "^(CERAMIC|PLASTIC|CLAY|TERRACOTTA)$", message = "Invalid pot type")
     private String potType;
 
     @Pattern(regexp = "^(PRUNER|SHOVEL|RAKE|WATERCAN)$", message = "Invalid tool type")

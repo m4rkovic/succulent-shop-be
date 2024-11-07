@@ -1,5 +1,6 @@
 package com.m4rkovic.succulent_shop.controller;
 
+import com.m4rkovic.succulent_shop.dto.BulkProductRequestDTO;
 import com.m4rkovic.succulent_shop.dto.ProductDTO;
 import com.m4rkovic.succulent_shop.entity.Plant;
 import com.m4rkovic.succulent_shop.entity.Product;
@@ -7,8 +8,10 @@ import com.m4rkovic.succulent_shop.enumerator.PotSize;
 import com.m4rkovic.succulent_shop.enumerator.PotType;
 import com.m4rkovic.succulent_shop.enumerator.ProductType;
 import com.m4rkovic.succulent_shop.enumerator.ToolType;
+import com.m4rkovic.succulent_shop.exceptions.BulkImportException;
 import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
 import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
+import com.m4rkovic.succulent_shop.response.BulkImportResponse;
 import com.m4rkovic.succulent_shop.response.ProductResponse;
 import com.m4rkovic.succulent_shop.service.PlantService;
 import com.m4rkovic.succulent_shop.service.ProductSearchCriteria;
@@ -22,6 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +34,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,10 +88,8 @@ public class ProductApiController {
         log.debug("Creating new product with data: {}", productDto);
 
         try {
-            // Validate using custom validator
-            productValidator.validateAndThrow(productDto);
+//            productValidator.validateAndThrow(productDto);
 
-            // Convert and validate enums
             PotSize potSize = productDto.getPotSize() != null ?
                     PotSize.valueOf(productDto.getPotSize().toUpperCase()) : null;
             ProductType productType = ProductType.valueOf(productDto.getProductType().toUpperCase());
@@ -95,7 +98,10 @@ public class ProductApiController {
             ToolType toolType = productDto.getToolType() != null ?
                     ToolType.valueOf(productDto.getToolType().toUpperCase()) : null;
 
-            // Validate plant existence
+            if (productDto.isPot() && productDto.getPotType() == null) {
+                throw new InvalidDataException("Pot type is required when 'isPot' is true");
+            }
+
             Plant plant = plantService.findById(productDto.getPlantId());
             if (plant == null) {
                 throw new ResourceNotFoundException("Plant not found with id: " + productDto.getPlantId());
@@ -146,6 +152,47 @@ public class ProductApiController {
         return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
     }
 
+    @Operation(summary = "Bulk import products")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Products imported successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "207", description = "Partial success - some products imported")
+    })
+    @PostMapping("/bulk")
+    public ResponseEntity<?> bulkImportProducts(
+            @Valid @RequestBody List<BulkProductRequestDTO> products) {
+        log.debug("Received bulk import request for {} products", products.size());
+
+        try {
+            List<Product> importedProducts = productService.bulkImport(products);
+            List<ProductResponse> responses = importedProducts.stream()
+                    .map(ProductResponse::fromEntity)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new BulkImportResponse(
+                            responses,
+                            "All products imported successfully",
+                            products.size(),
+                            responses.size(),
+                            Collections.emptyList()
+                    ));
+
+        } catch (BulkImportException e) {
+            List<ProductResponse> partialResponses = e.getSuccessfulImports().stream()
+                    .map(ProductResponse::fromEntity)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(HttpStatus.MULTI_STATUS)
+                    .body(new BulkImportResponse(
+                            partialResponses,
+                            "Partial import completed with errors",
+                            products.size(),
+                            partialResponses.size(),
+                            Collections.singletonList(e.getMessage())
+                    ));
+        }
+    }
 
     // DELETE
     @Operation(summary = "Delete a product")

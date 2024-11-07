@@ -76,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // UPDATE ORDER STATUS
+    @Override
     @Transactional
     public Order updateOrderStatus(Long orderId, OrderStatus newStatus) {
         log.debug("Updating status for order with id: {}", orderId);
