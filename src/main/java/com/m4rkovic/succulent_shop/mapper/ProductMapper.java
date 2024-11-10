@@ -31,15 +31,12 @@ public class ProductMapper {
             return null;
         }
 
-        // Retrieve the plant entity based on the plantId provided in DTO
         Plant plant = dto.getPlantId() != null ? plantService.findById(dto.getPlantId()) : null;
 
-        // Ensure that when `isPot` is true, `potSize` and `potType` are not null
         PotSize potSize = null;
         PotType potType = null;
 
         if (dto.isPot()) {
-            // Only map potSize and potType if the product is a pot
             if (StringUtils.isNotBlank(dto.getPotSize())) {
                 potSize = PotSize.valueOf(dto.getPotSize().toUpperCase());
             }
@@ -48,19 +45,18 @@ public class ProductMapper {
             }
         }
 
-        // Map and build the Product entity
         return Product.builder()
                 .id(dto.getId())
                 .productName(dto.getProductName())
                 .productDesc(dto.getProductDesc())
-                .potSize(potSize)  // Set potSize only if valid
+                .potSize(potSize)
                 .productType(StringUtils.isNotBlank(dto.getProductType()) ? ProductType.valueOf(dto.getProductType().toUpperCase()) : null)
                 .isPot(dto.isPot())
-                .potType(potType)  // Set potType only if valid
+                .potType(potType)
                 .toolType(StringUtils.isNotBlank(dto.getToolType()) ? ToolType.valueOf(dto.getToolType().toUpperCase()) : null)
                 .potNumber(dto.getPotNumber())
                 .price(dto.getPrice())
-                .plant(plant)  // Set the related plant entity
+                .plant(plant)
                 .build();
     }
 
@@ -69,7 +65,6 @@ public class ProductMapper {
             return null;
         }
 
-        // Map Product entity to DTO
         return ProductDTO.builder()
                 .id(entity.getId())
                 .productName(entity.getProductName())
@@ -90,7 +85,6 @@ public class ProductMapper {
             return;
         }
 
-        // Update fields from DTO to entity
         if (StringUtils.isNotBlank(dto.getProductName())) {
             entity.setProductName(dto.getProductName());
         }

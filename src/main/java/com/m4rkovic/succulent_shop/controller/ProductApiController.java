@@ -88,7 +88,7 @@ public class ProductApiController {
         log.debug("Creating new product with data: {}", productDto);
 
         try {
-//            productValidator.validateAndThrow(productDto);
+            productValidator.validateAndThrow(productDto);
 
             PotSize potSize = productDto.getPotSize() != null ?
                     PotSize.valueOf(productDto.getPotSize().toUpperCase()) : null;

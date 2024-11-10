@@ -27,7 +27,7 @@ import java.util.List;
 public class Product extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plant_id", nullable = false)
+    @JoinColumn(name = "plant_id", nullable = true)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Plant plant;
 

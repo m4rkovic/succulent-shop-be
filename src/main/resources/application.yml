@@ -15,6 +15,20 @@ spring:
       database-platform: org.hibernate.dialect.MySQL8InnoDBDialect
       globally_quoted_identifiers: true
 
-#  springdoc.api-docs.path=/api-docs
-#  springdoc.swagger-ui.path=/swagger-ui.html
-#  springdoc.swagger-ui.operationsSorter=method
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    com.m4rkovic.succulent_shop.controller: DEBUG
+#    com.m4rkovic.succulent_shop.service: DEBUG
+#    root: INFO
+#    com.m4rkovic.succulent_shop: DEBUG
+#    org.springframework: INFO
+#    org.hibernate: INFO
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+#  file:
+#    name: logs/application.log
+#    max-size: 10MB
+#    max-history: 30

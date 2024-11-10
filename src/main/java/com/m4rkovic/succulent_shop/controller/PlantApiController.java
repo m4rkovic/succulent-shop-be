@@ -42,7 +42,6 @@ public class PlantApiController {
     private final PlantService plantService;
     private final CategoryService categoryService;
     private final PlantSearchService plantSearchService;
-
     private final PlantValidator plantValidator;
 
     @Operation(summary = "Get a plant by ID!")
