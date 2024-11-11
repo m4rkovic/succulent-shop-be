@@ -23,8 +23,6 @@ public class OrderResponse {
     private String address;
     private UserResponse user;
     private List<ProductResponse> products;
-
-    // Static method to map Order entity to OrderResponse
     public static OrderResponse fromEntity(Order order) {
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());

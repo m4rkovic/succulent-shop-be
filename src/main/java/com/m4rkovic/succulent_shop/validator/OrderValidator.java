@@ -19,7 +19,7 @@ public class OrderValidator {
         List<String> violations = new ArrayList<>();
 
         validateBasicFields(orderDTO, violations);
-        validateOrderStatus(orderDTO, violations);
+//        validateOrderStatus(orderDTO, violations);
         validateAddress(orderDTO, violations);
         validateProducts(orderDTO, violations);
 
@@ -31,26 +31,26 @@ public class OrderValidator {
             violations.add("User ID cannot be null");
         }
 
-        if (orderDTO.getOrderDate() == null || orderDTO.getOrderDate().after(new Date())) {
-            violations.add("Order date cannot be in the future or null");
-        }
-
-        if (StringUtils.isBlank(orderDTO.getOrderCode())) {
-            violations.add("Order code cannot be empty");
-        }
+//        if (orderDTO.getOrderDate() == null || orderDTO.getOrderDate().after(new Date())) {
+//            violations.add("Order date cannot be in the future or null");
+//        }
+//
+//        if (StringUtils.isBlank(orderDTO.getOrderCode())) {
+//            violations.add("Order code cannot be empty");
+//        }
     }
 
-    private void validateOrderStatus(OrderDTO orderDTO, List<String> violations) {
-        if (orderDTO.getOrderStatus() == null) {
-            violations.add("Order status cannot be null");
-        } else {
-            try {
-                OrderStatus.valueOf(orderDTO.getOrderStatus().name());
-            } catch (IllegalArgumentException e) {
-                violations.add("Invalid order status value");
-            }
-        }
-    }
+//    private void validateOrderStatus(OrderDTO orderDTO, List<String> violations) {
+//        if (orderDTO.getOrderStatus() == null) {
+//            violations.add("Order status cannot be null");
+//        } else {
+//            try {
+//                OrderStatus.valueOf(orderDTO.getOrderStatus().name());
+//            } catch (IllegalArgumentException e) {
+//                violations.add("Invalid order status value");
+//            }
+//        }
+//    }
 
     private void validateAddress(OrderDTO orderDTO, List<String> violations) {
         if (StringUtils.isBlank(orderDTO.getAddress())) {

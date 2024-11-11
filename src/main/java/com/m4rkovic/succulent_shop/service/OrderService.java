@@ -14,7 +14,7 @@ public interface OrderService {
 
     public Order findById(Long id);
 
-    public Order save(Long userId, List<Long> productIds);
+    public Order save(Long userId, List<Long> productIds, String address) ;
 
     public Order updateOrderStatus(Long orderId, OrderStatus newStatus);
 

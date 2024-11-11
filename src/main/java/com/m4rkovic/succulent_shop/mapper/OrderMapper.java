@@ -34,10 +34,10 @@ public class OrderMapper {
                 productService.findProductsByIds(dto.getProductsIds()) : Collections.emptyList();
 
         return Order.builder()
-                .orderDate(dto.getOrderDate())
-                .orderStatus(dto.getOrderStatus())
+//                .orderDate(dto.getOrderDate())
+//                .orderStatus(dto.getOrderStatus())
                 .user(user)
-                .orderCode(dto.getOrderCode())
+//                .orderCode(dto.getOrderCode())
                 .address(dto.getAddress())
                 .products(products)
                 .build();
@@ -52,9 +52,9 @@ public class OrderMapper {
                 .userId(entity.getUser().getId())
                 .productsIds(entity.getProducts() != null ?
                         entity.getProducts().stream().map(Product::getId).collect(Collectors.toList()) : Collections.emptyList())
-                .orderCode(entity.getOrderCode())
-                .orderDate(entity.getOrderDate())
-                .orderStatus(entity.getOrderStatus())
+//                .orderCode(entity.getOrderCode())
+//                .orderDate(entity.getOrderDate())
+//                .orderStatus(entity.getOrderStatus())
                 .address(entity.getAddress())
                 .build();
     }
@@ -64,15 +64,15 @@ public class OrderMapper {
             return;
         }
 
-        if (dto.getOrderDate() != null) {
-            entity.setOrderDate(dto.getOrderDate());
-        }
-        if (dto.getOrderStatus() != null) {
-            entity.setOrderStatus(dto.getOrderStatus());
-        }
-        if (dto.getOrderCode() != null) {
-            entity.setOrderCode(dto.getOrderCode());
-        }
+//        if (dto.getOrderDate() != null) {
+//            entity.setOrderDate(dto.getOrderDate());
+//        }
+//        if (dto.getOrderStatus() != null) {
+//            entity.setOrderStatus(dto.getOrderStatus());
+//        }
+//        if (dto.getOrderCode() != null) {
+//            entity.setOrderCode(dto.getOrderCode());
+//        }
         if (dto.getAddress() != null) {
             entity.setAddress(dto.getAddress());
         }

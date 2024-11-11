@@ -209,6 +209,8 @@ public class ProductApiController {
         return ResponseEntity.noContent().build();
     }
 
+
+    // Search
     @Operation(summary = "Search and filter products")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved products"),

@@ -2,10 +2,15 @@ package com.m4rkovic.succulent_shop.controller;
 
 import com.m4rkovic.succulent_shop.dto.OrderDTO;
 import com.m4rkovic.succulent_shop.entity.Order;
+import com.m4rkovic.succulent_shop.entity.Product;
+import com.m4rkovic.succulent_shop.entity.User;
 import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
 import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
+import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
 import com.m4rkovic.succulent_shop.response.OrderResponse;
 import com.m4rkovic.succulent_shop.service.OrderService;
+import com.m4rkovic.succulent_shop.service.ProductService;
+import com.m4rkovic.succulent_shop.service.UserService;
 import com.m4rkovic.succulent_shop.validator.OrderValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,6 +40,10 @@ public class OrderApiController {
 
     private final OrderService orderService;
     private final OrderValidator orderValidator;
+
+    private final ProductService productService;
+
+    private final UserService userService;
 
     // FIND BY ID
     @Operation(summary = "Get an order by ID")
@@ -68,16 +77,35 @@ public class OrderApiController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
-            @Valid @RequestBody OrderDTO orderDto) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderDTO orderDto) {
         log.debug("Creating new order with data: {}", orderDto);
 
         try {
             orderValidator.validateAndThrow(orderDto);
 
-            Order savedOrder = orderService.save(orderDto.getUserId(), orderDto.getProductsIds());
-            OrderResponse response = OrderResponse.fromEntity(savedOrder);
+            // Validate and get user
+            User user = userService.findById(orderDto.getUserId());
+            if (user == null) {
+                throw new ResourceNotFoundException("User not found with id: " + orderDto.getUserId());
+            }
 
+            // Validate and get products
+            List<Product> products = productService.findProductsByIds(orderDto.getProductsIds());
+            if (products.isEmpty()) {
+                throw new ResourceNotFoundException("No products found for the provided ids");
+            }
+            if (products.size() != orderDto.getProductsIds().size()) {
+                throw new InvalidDataException("Some products from the provided list were not found");
+            }
+
+            // Create order with validated data
+            Order savedOrder = orderService.save(
+                    orderDto.getUserId(),
+                    orderDto.getProductsIds(),
+                    orderDto.getAddress()
+            );
+
+            OrderResponse response = OrderResponse.fromEntity(savedOrder);
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest()
                     .path("/{id}")
@@ -85,12 +113,12 @@ public class OrderApiController {
                     .toUri();
 
             return ResponseEntity.created(location).body(response);
+
         } catch (IllegalArgumentException e) {
             log.error("Invalid input in order creation request", e);
             throw new InvalidDataException("Invalid order data: " + e.getMessage());
         }
     }
-
     // UPDATE ORDER STATUS
     @Operation(summary = "Update the status of an order")
     @ApiResponses(value = {

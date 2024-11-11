@@ -50,26 +50,35 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // SAVE
+
     @Override
     @Transactional
-    public Order save(Long userId, List<Long> productIds) {
+    public Order save(Long userId, List<Long> productIds, String address) {
         log.debug("Creating a new order for user with id: {}", userId);
 
-        User user = userService.findById(userId);
-        List<Product> products = productService.findProductsByIds(productIds);
-
-        OrderDTO orderDTO = createOrderDTO(user, products);
-        validationService.validateOrderDTO(orderDTO);
-
         try {
-            Order order = orderMapper.toEntity(orderDTO);
+            // Get user and products
+            User user = userService.findById(userId);
+            List<Product> products = productService.findProductsByIds(productIds);
+
+            // Create initial order
+            Order order = Order.builder()
+                    .user(user)
+                    .products(products)
+                    .address(address)
+                    .build();  // All other fields will be set by @PrePersist
+
+            // Save first time to get ID
             order = orderRepository.save(order);
 
+            // Generate and set order code
             String datePart = new SimpleDateFormat("yyyyMMdd").format(new Date());
             String orderCode = "ORD" + order.getId() + datePart;
             order.setOrderCode(orderCode);
 
+            // Save again with the order code
             return orderRepository.save(order);
+
         } catch (DataIntegrityViolationException e) {
             throw new CreationException("Failed to create order due to data integrity violation", e);
         }
@@ -103,15 +112,5 @@ public class OrderServiceImpl implements OrderService {
         } catch (DataIntegrityViolationException e) {
             throw new DeleteException("Cannot delete order with id: " + orderId + " due to existing references", e);
         }
-    }
-
-    private OrderDTO createOrderDTO(User user, List<Product> products) {
-        return OrderDTO.builder()
-                .userId(user.getId())
-                .productsIds(products.stream().map(Product::getId).toList())
-                .orderDate(new Date())
-                .orderStatus(OrderStatus.ORDERED)
-                .address(user.getAddress())
-                .build();
     }
 }
