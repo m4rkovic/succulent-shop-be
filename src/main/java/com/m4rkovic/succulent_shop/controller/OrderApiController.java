@@ -19,6 +19,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +32,6 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -61,13 +64,23 @@ public class OrderApiController {
     // FIND ALL
     @Operation(summary = "Get all orders")
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        List<OrderResponse> orders = orderService.findAll()
-                .stream()
-                .map(OrderResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<Page<OrderResponse>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+        Page<Order> orderPage = orderService.findAllPaginated(pageable);
+        Page<OrderResponse> responsePage = orderPage.map(OrderResponse::fromEntity);
+        return ResponseEntity.ok(responsePage);
     }
+
 
     // FIND BY USER ID
     @Operation(summary = "Get all orders for a specific user")
@@ -76,14 +89,23 @@ public class OrderApiController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByUserId(
+    public ResponseEntity<Page<OrderResponse>> getOrdersByUserId(
             @Parameter(description = "User ID", required = true)
-            @PathVariable Long userId) {
-        List<OrderResponse> orders = orderService.findByUserId(userId)
-                .stream()
-                .map(OrderResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(orders);
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+        Page<Order> orderPage = orderService.findByUserIdPaginated(userId, pageable);
+        Page<OrderResponse> responsePage = orderPage.map(OrderResponse::fromEntity);
+        return ResponseEntity.ok(responsePage);
     }
 
     // CREATE ORDER

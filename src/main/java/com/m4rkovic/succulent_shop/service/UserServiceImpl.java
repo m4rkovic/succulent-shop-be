@@ -9,6 +9,8 @@ import com.m4rkovic.succulent_shop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,15 @@ public class UserServiceImpl implements UserService {
         log.debug("Retrieving all users!");
         return userRepository.findAll();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public Page<User> findAllPaginated(Pageable pageable) {
+        log.debug("Retrieving all users with pagination! Page: {}, Size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return userRepository.findAll(pageable);
+    }
+
+
 
     // FIND BY ID
     @Override
@@ -57,21 +68,6 @@ public class UserServiceImpl implements UserService {
     }
 
     // UPDATE
-//    @Override
-//    @Transactional
-//    public User update(Long id, UserDTO userDTO) {
-//        log.debug("Updating user with id: {}", id);
-//        User existingUser = findById(id);
-//        validationService.validateUserDTO(userDTO);
-//
-//        try {
-//            userMapper.updateEntityFromDTO(existingUser, userDTO);
-//            return userRepository.save(existingUser);
-//        } catch (DataIntegrityViolationException e) {
-//            throw new UpdateException(String.format("Failed to update user with id: %d", id), e);
-//        }
-//    }
-
     @Override
     @Transactional
     public User update(Long id, UserDTO userDTO) {

@@ -13,7 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +24,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -53,12 +54,21 @@ public class CategoryApiController {
     // FIND ALL
     @Operation(summary = "Get all categories")
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        List<CategoryResponse> categories = categoryService.findAll()
-                .stream()
-                .map(CategoryResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<Page<CategoryResponse>> getAllCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+        Page<Category> categoryPage = categoryService.findAllPaginated(pageable);
+        Page<CategoryResponse> responsePage = categoryPage.map(CategoryResponse::fromEntity);
+        return ResponseEntity.ok(responsePage);
     }
 
     // ADD CATEGORY

@@ -1,6 +1,5 @@
 package com.m4rkovic.succulent_shop.service;
 
-import com.m4rkovic.succulent_shop.dto.OrderDTO;
 import com.m4rkovic.succulent_shop.entity.Order;
 import com.m4rkovic.succulent_shop.entity.Product;
 import com.m4rkovic.succulent_shop.entity.User;
@@ -8,11 +7,12 @@ import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
 import com.m4rkovic.succulent_shop.exceptions.CreationException;
 import com.m4rkovic.succulent_shop.exceptions.DeleteException;
 import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
-import com.m4rkovic.succulent_shop.mapper.OrderMapper;
 import com.m4rkovic.succulent_shop.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +27,8 @@ import java.util.Random;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderValidationService validationService;
     private final UserService userService;
     private final ProductService productService;
-    private final OrderMapper orderMapper;
 
 
     // FIND BY USER ID
@@ -51,6 +48,14 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Order> findAllPaginated(Pageable pageable) {
+        log.debug("Retrieving all orders with pagination! Page: {}, Size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return orderRepository.findAll(pageable);
+    }
+
     // FIND BY ID
     @Override
     @Transactional(readOnly = true)
@@ -58,6 +63,15 @@ public class OrderServiceImpl implements OrderService {
         log.debug("Retrieving order with id: {}", id);
         return orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Order> findByUserIdPaginated(Long userId, Pageable pageable) {
+        log.debug("Retrieving all orders for user with id: {} with pagination! Page: {}, Size: {}",
+                userId, pageable.getPageNumber(), pageable.getPageSize());
+        userService.findById(userId); // Verify user exists
+        return orderRepository.findByUserId(userId, pageable);
     }
 
     // SAVE

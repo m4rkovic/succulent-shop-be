@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,14 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> findAll() {
         log.debug("Retrieving all categories!");
         return categoryRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Category> findAllPaginated(Pageable pageable) {
+        log.debug("Retrieving all categories with pagination! Page: {}, Size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return categoryRepository.findAll(pageable);
     }
 
     @Override

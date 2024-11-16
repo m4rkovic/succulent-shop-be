@@ -11,6 +11,8 @@ import com.m4rkovic.succulent_shop.repository.PlantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +37,15 @@ public class PlantServiceImpl implements PlantService {
         log.debug("Retrieving all plants!");
         return plantRepository.findAll();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Plant> findAllPaginated(Pageable pageable) {
+        log.debug("Retrieving all plants with pagination! Page: {}, Size: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        return plantRepository.findAll(pageable);
+    }
+
 
     // FIND BY ID
     @Override

@@ -133,6 +133,8 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
+
+    // Bulk import
     @Override
     @Transactional
     public List<Product> bulkImport(List<BulkProductRequestDTO> products) {

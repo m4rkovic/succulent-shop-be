@@ -3,9 +3,7 @@ package com.m4rkovic.succulent_shop.controller;
 import com.m4rkovic.succulent_shop.dto.UserDTO;
 import com.m4rkovic.succulent_shop.entity.User;
 import com.m4rkovic.succulent_shop.enumerator.Role;
-import com.m4rkovic.succulent_shop.enumerator.ToolType;
 import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
-import com.m4rkovic.succulent_shop.repository.UserRepository;
 import com.m4rkovic.succulent_shop.response.UserResponse;
 import com.m4rkovic.succulent_shop.service.UserService;
 import com.m4rkovic.succulent_shop.service.UserValidationService;
@@ -16,6 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +25,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -55,12 +55,21 @@ public class UserApiController {
     // FIND ALL
     @Operation(summary = "Get all users")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.findAll()
-                .stream()
-                .map(UserResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+        Page<User> userPage = userService.findAllPaginated(pageable);
+        Page<UserResponse> responsePage = userPage.map(UserResponse::fromEntity);
+        return ResponseEntity.ok(responsePage);
     }
 
     // ADD USER
@@ -104,7 +113,7 @@ public class UserApiController {
             throw new InvalidDataException("Invalid user data: " + e.getMessage());
         }
     }
-    
+
 //    @PostMapping
 //    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserDTO userDto) {
 //        log.debug("Creating new user with data: {}", userDto);

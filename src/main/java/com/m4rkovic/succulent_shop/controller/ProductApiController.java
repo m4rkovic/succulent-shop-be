@@ -70,15 +70,6 @@ public class ProductApiController {
     }
 
     // FIND ALL
-//    @Operation(summary = "Get all products")
-//    @GetMapping
-//    public ResponseEntity<List<ProductResponse>> getAllProducts() {
-//        List<ProductResponse> products = productService.findAll()
-//                .stream()
-//                .map(ProductResponse::fromEntity)
-//                .collect(Collectors.toList());
-//        return ResponseEntity.ok(products);
-//    }
     @Operation(summary = "Get all products")
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
