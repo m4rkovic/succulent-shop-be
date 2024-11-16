@@ -8,15 +8,11 @@ import com.m4rkovic.succulent_shop.mapper.UserMapper;
 import com.m4rkovic.succulent_shop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,12 +57,27 @@ public class UserServiceImpl implements UserService {
     }
 
     // UPDATE
+//    @Override
+//    @Transactional
+//    public User update(Long id, UserDTO userDTO) {
+//        log.debug("Updating user with id: {}", id);
+//        User existingUser = findById(id);
+//        validationService.validateUserDTO(userDTO);
+//
+//        try {
+//            userMapper.updateEntityFromDTO(existingUser, userDTO);
+//            return userRepository.save(existingUser);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new UpdateException(String.format("Failed to update user with id: %d", id), e);
+//        }
+//    }
+
     @Override
     @Transactional
     public User update(Long id, UserDTO userDTO) {
         log.debug("Updating user with id: {}", id);
         User existingUser = findById(id);
-        validationService.validateUserDTO(userDTO);
+        validationService.validateUserDTO(userDTO, true); // Pass true for update
 
         try {
             userMapper.updateEntityFromDTO(existingUser, userDTO);

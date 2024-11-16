@@ -15,12 +15,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -38,6 +40,12 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findAll() {
         log.debug("Retrieving all products!");
         return productRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> findAllPaginated(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     // FIND BY ID
@@ -106,17 +114,23 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findProductsByIds(List<Long> productIds) {
         log.debug("Retrieving products with IDs: {}", productIds);
 
-        List<Product> products = productRepository.findAllById(productIds);
+        Set<Long> uniqueProductIds = new HashSet<>(productIds);
+        List<Product> uniqueProducts = productRepository.findAllById(uniqueProductIds);
 
-        if (products.size() != productIds.size()) {
-            List<Long> foundIds = products.stream().map(Product::getId).toList();
-            List<Long> missingIds = productIds.stream()
+        if (uniqueProducts.size() != uniqueProductIds.size()) {
+            List<Long> foundIds = uniqueProducts.stream().map(Product::getId).toList();
+            List<Long> missingIds = uniqueProductIds.stream()
                     .filter(id -> !foundIds.contains(id))
                     .toList();
             throw new ResourceNotFoundException(String.format("Products not found for IDs: %s", missingIds));
         }
 
-        return products;
+        Map<Long, Product> productMap = uniqueProducts.stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        return productIds.stream()
+                .map(productMap::get)
+                .collect(Collectors.toList());
     }
 
     @Override

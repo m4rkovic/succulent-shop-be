@@ -14,18 +14,21 @@ import java.util.List;
 
 public class UserValidator {
 
-    public List<String> validate(UserDTO userDTO) {
+    public List<String> validate(UserDTO userDTO, boolean isUpdate) {
         List<String> violations = new ArrayList<>();
 
-        validateBasicFields(userDTO, violations);
+        validateBasicFields(userDTO, violations, isUpdate);
         validateEmail(userDTO, violations);
-        validatePassword(userDTO, violations);
-        validateRole(userDTO, violations);
+
+        if (!isUpdate) {
+            validatePassword(userDTO, violations);
+            validateRole(userDTO, violations);
+        }
 
         return violations;
     }
 
-    private void validateBasicFields(UserDTO userDTO, List<String> violations) {
+    private void validateBasicFields(UserDTO userDTO, List<String> violations, boolean isUpdate) {
         if (StringUtils.isBlank(userDTO.getFirstname())) {
             violations.add("First name cannot be empty");
         }
@@ -67,8 +70,8 @@ public class UserValidator {
         }
     }
 
-    public void validateAndThrow(UserDTO userDTO) {
-        List<String> violations = validate(userDTO);
+    public void validateAndThrow(UserDTO userDTO, boolean isUpdate) {
+        List<String> violations = validate(userDTO, isUpdate);
         if (!violations.isEmpty()) {
             throw new InvalidDataException(String.join(", ", violations));
         }

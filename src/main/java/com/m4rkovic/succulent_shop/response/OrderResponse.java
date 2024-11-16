@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +22,11 @@ public class OrderResponse {
     private String orderCode;
     private String orderUpdateLog;
     private String address;
+    private String deliveryMethod;
+    private BigDecimal orderTotal;
     private UserResponse user;
     private List<ProductResponse> products;
+
     public static OrderResponse fromEntity(Order order) {
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
@@ -32,9 +36,9 @@ public class OrderResponse {
         response.setOrderCode(order.getOrderCode());
         response.setOrderUpdateLog(order.getOrderUpdateLog());
         response.setAddress(order.getAddress());
-
+        response.setDeliveryMethod(order.getDeliveryMethod());
+        response.setOrderTotal(order.getOrderTotal());
         response.setUser(UserResponse.fromEntity(order.getUser()));
-
         response.setProducts(order.getProducts().stream()
                 .map(ProductResponse::fromEntity)
                 .collect(Collectors.toList()));

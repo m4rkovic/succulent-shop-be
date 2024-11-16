@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,9 +41,7 @@ public class OrderApiController {
 
     private final OrderService orderService;
     private final OrderValidator orderValidator;
-
     private final ProductService productService;
-
     private final UserService userService;
 
     // FIND BY ID
@@ -64,6 +63,23 @@ public class OrderApiController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<OrderResponse> orders = orderService.findAll()
+                .stream()
+                .map(OrderResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(orders);
+    }
+
+    // FIND BY USER ID
+    @Operation(summary = "Get all orders for a specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders found for user"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByUserId(
+            @Parameter(description = "User ID", required = true)
+            @PathVariable Long userId) {
+        List<OrderResponse> orders = orderService.findByUserId(userId)
                 .stream()
                 .map(OrderResponse::fromEntity)
                 .collect(Collectors.toList());
@@ -98,11 +114,18 @@ public class OrderApiController {
                 throw new InvalidDataException("Some products from the provided list were not found");
             }
 
+            // Calculate order total
+            BigDecimal orderTotal = products.stream()
+                    .map(Product::getPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
             // Create order with validated data
             Order savedOrder = orderService.save(
                     orderDto.getUserId(),
                     orderDto.getProductsIds(),
-                    orderDto.getAddress()
+                    orderDto.getAddress(),
+                    orderDto.getDeliveryMethod(),
+                    orderTotal
             );
 
             OrderResponse response = OrderResponse.fromEntity(savedOrder);
@@ -119,6 +142,7 @@ public class OrderApiController {
             throw new InvalidDataException("Invalid order data: " + e.getMessage());
         }
     }
+
     // UPDATE ORDER STATUS
     @Operation(summary = "Update the status of an order")
     @ApiResponses(value = {

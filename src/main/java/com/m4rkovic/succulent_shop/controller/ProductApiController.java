@@ -25,6 +25,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -67,14 +70,32 @@ public class ProductApiController {
     }
 
     // FIND ALL
+//    @Operation(summary = "Get all products")
+//    @GetMapping
+//    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+//        List<ProductResponse> products = productService.findAll()
+//                .stream()
+//                .map(ProductResponse::fromEntity)
+//                .collect(Collectors.toList());
+//        return ResponseEntity.ok(products);
+//    }
     @Operation(summary = "Get all products")
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        List<ProductResponse> products = productService.findAll()
-                .stream()
-                .map(ProductResponse::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(products);
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.Direction.fromString(sortDirection),
+                sortBy
+        );
+        Page<Product> productPage = productService.findAllPaginated(pageable);
+        Page<ProductResponse> responsePage = productPage.map(ProductResponse::fromEntity);
+        return ResponseEntity.ok(responsePage);
     }
 
     // ADD PRODUCT

@@ -8,6 +8,8 @@ import com.m4rkovic.succulent_shop.service.ProductService;
 import com.m4rkovic.succulent_shop.service.UserService;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -33,12 +35,15 @@ public class OrderMapper {
         List<Product> products = dto.getProductsIds() != null ?
                 productService.findProductsByIds(dto.getProductsIds()) : Collections.emptyList();
 
+        BigDecimal orderTotal = products.stream()
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         return Order.builder()
-//                .orderDate(dto.getOrderDate())
-//                .orderStatus(dto.getOrderStatus())
                 .user(user)
-//                .orderCode(dto.getOrderCode())
                 .address(dto.getAddress())
+                .deliveryMethod(dto.getDeliveryMethod())
+                .orderTotal(orderTotal)
                 .products(products)
                 .build();
     }
@@ -52,10 +57,8 @@ public class OrderMapper {
                 .userId(entity.getUser().getId())
                 .productsIds(entity.getProducts() != null ?
                         entity.getProducts().stream().map(Product::getId).collect(Collectors.toList()) : Collections.emptyList())
-//                .orderCode(entity.getOrderCode())
-//                .orderDate(entity.getOrderDate())
-//                .orderStatus(entity.getOrderStatus())
                 .address(entity.getAddress())
+                .deliveryMethod(entity.getDeliveryMethod())
                 .build();
     }
 
@@ -64,21 +67,20 @@ public class OrderMapper {
             return;
         }
 
-//        if (dto.getOrderDate() != null) {
-//            entity.setOrderDate(dto.getOrderDate());
-//        }
-//        if (dto.getOrderStatus() != null) {
-//            entity.setOrderStatus(dto.getOrderStatus());
-//        }
-//        if (dto.getOrderCode() != null) {
-//            entity.setOrderCode(dto.getOrderCode());
-//        }
         if (dto.getAddress() != null) {
             entity.setAddress(dto.getAddress());
+        }
+        if (dto.getDeliveryMethod() != null) {
+            entity.setDeliveryMethod(dto.getDeliveryMethod());
         }
         if (dto.getProductsIds() != null && !dto.getProductsIds().isEmpty()) {
             List<Product> products = productService.findProductsByIds(dto.getProductsIds());
             entity.setProducts(products);
+            // Update order total when products change
+            BigDecimal orderTotal = products.stream()
+                    .map(Product::getPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            entity.setOrderTotal(orderTotal);
         }
     }
 

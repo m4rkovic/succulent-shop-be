@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +36,10 @@ public class Order extends AbstractEntity {
     private String orderCode;
     private String orderUpdateLog;
     private String address;
+    private String deliveryMethod;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal orderTotal;
 
     @ManyToMany
     @JoinTable(
@@ -54,6 +59,9 @@ public class Order extends AbstractEntity {
         }
         if (orderUpdateLog == null) {
             orderUpdateLog = "Order created at: " + orderDate + "\n";
+        }
+        if (deliveryMethod == null) {
+            deliveryMethod = "Standard Delivery";
         }
     }
 }

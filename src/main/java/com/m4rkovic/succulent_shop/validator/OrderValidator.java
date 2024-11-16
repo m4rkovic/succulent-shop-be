@@ -19,9 +19,9 @@ public class OrderValidator {
         List<String> violations = new ArrayList<>();
 
         validateBasicFields(orderDTO, violations);
-//        validateOrderStatus(orderDTO, violations);
         validateAddress(orderDTO, violations);
         validateProducts(orderDTO, violations);
+        validateDeliveryMethod(orderDTO, violations);
 
         return violations;
     }
@@ -40,18 +40,6 @@ public class OrderValidator {
 //        }
     }
 
-//    private void validateOrderStatus(OrderDTO orderDTO, List<String> violations) {
-//        if (orderDTO.getOrderStatus() == null) {
-//            violations.add("Order status cannot be null");
-//        } else {
-//            try {
-//                OrderStatus.valueOf(orderDTO.getOrderStatus().name());
-//            } catch (IllegalArgumentException e) {
-//                violations.add("Invalid order status value");
-//            }
-//        }
-//    }
-
     private void validateAddress(OrderDTO orderDTO, List<String> violations) {
         if (StringUtils.isBlank(orderDTO.getAddress())) {
             violations.add("Address cannot be empty");
@@ -64,6 +52,11 @@ public class OrderValidator {
         }
     }
 
+    private void validateDeliveryMethod(OrderDTO orderDTO, List<String> violations) {
+        if (StringUtils.isBlank(orderDTO.getDeliveryMethod())) {
+            violations.add("Delivery method cannot be empty");
+        }
+    }
     public void validateAndThrow(OrderDTO orderDTO) {
         List<String> violations = validate(orderDTO);
         if (!violations.isEmpty()) {

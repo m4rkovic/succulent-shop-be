@@ -16,6 +16,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +32,16 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final ProductService productService;
     private final OrderMapper orderMapper;
+
+
+    // FIND BY USER ID
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findByUserId(Long userId) {
+        log.debug("Retrieving all orders for user with id: {}", userId);
+        userService.findById(userId);
+        return orderRepository.findByUserId(userId);
+    }
 
     // FIND ALL
     @Override
@@ -50,10 +61,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // SAVE
-
     @Override
     @Transactional
-    public Order save(Long userId, List<Long> productIds, String address) {
+    public Order save(Long userId, List<Long> productIds, String address, String deliveryMethod, BigDecimal orderTotal) {
         log.debug("Creating a new order for user with id: {}", userId);
 
         try {
@@ -66,6 +76,8 @@ public class OrderServiceImpl implements OrderService {
                     .user(user)
                     .products(products)
                     .address(address)
+                    .deliveryMethod(deliveryMethod)
+                    .orderTotal(orderTotal)
                     .build();  // All other fields will be set by @PrePersist
 
             // Save first time to get ID
