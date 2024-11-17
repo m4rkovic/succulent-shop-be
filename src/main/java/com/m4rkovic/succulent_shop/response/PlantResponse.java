@@ -17,6 +17,7 @@ public class PlantResponse {
     private Color primaryColor;
     private Color secondaryColor;
     private Color bloomColor;
+    private String careInstructions;
 
     public static PlantResponse formEntity(Plant plant) {
         PlantResponse response = new PlantResponse();
@@ -27,6 +28,7 @@ public class PlantResponse {
         response.setPrimaryColor(plant.getPrimaryColor());
         response.setSecondaryColor(plant.getSecondaryColor());
         response.setBloomColor(plant.getBloomColor());
+        response.setCareInstructions(plant.getCareInstructions());
         return response;
     }
 }

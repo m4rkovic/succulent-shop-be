@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
                     criteria.getPrimaryColor(),
                     criteria.getSecondaryColor(),
                     criteria.getBloomColor(),
-//                    criteria.getCategoryId(),
+                    criteria.getCareInstructions(),
                     pageable
             );
         }

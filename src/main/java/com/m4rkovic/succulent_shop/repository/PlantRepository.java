@@ -14,13 +14,15 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
             "(COALESCE(:name, '') = '' OR p.name = :name) AND " +
             "(:primaryColor IS NULL OR p.primaryColor = :primaryColor) AND " +
             "(:secondaryColor IS NULL OR p.primaryColor = :secondaryColor) AND " +
-            "(:bloomColor IS NULL OR p.primaryColor = :bloomColor)")
+            "(:bloomColor IS NULL OR p.primaryColor = :bloomColor) AND " +
+            "(COALESCE(:careInstructions, '') = '' OR LOWER(p.careInstructions) LIKE LOWER(CONCAT('%', :careInstructions, '%')))")
     Page<Plant> findPlantsWithFilters(
             @Param("searchTerm") String searchTerm,
             @Param("name") String name,
             @Param("primaryColor") Color primaryColor,
             @Param("secondaryColor") Color secondaryColor,
             @Param("bloomColor") Color bloomColor,
+            @Param("careInstructions") String careInstructions,
             Pageable pageable
     );
 }

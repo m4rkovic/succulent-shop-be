@@ -31,6 +31,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+
 @RestController
 @RequestMapping("/api/v1/plants")
 @RequiredArgsConstructor
@@ -190,6 +191,7 @@ public class PlantApiController {
     public ResponseEntity<Page<PlantResponse>> searchPlants(
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) String careInstructions,
             @RequestParam(required = false) String primaryColor,
             @RequestParam(required = false) String secondaryColor,
             @RequestParam(required = false) String bloomColor,
@@ -202,6 +204,7 @@ public class PlantApiController {
         PlantSearchCriteria criteria = PlantSearchCriteria.builder()
                 .searchTerm(searchTerm)
                 .name(name)
+                .careInstructions(careInstructions)
                 .primaryColor(primaryColor != null ? Color.valueOf(primaryColor.toUpperCase()) : null)
                 .secondaryColor(secondaryColor != null ? Color.valueOf(secondaryColor.toUpperCase()) : null)
                 .secondaryColor(bloomColor != null ? Color.valueOf(bloomColor.toUpperCase()) : null)

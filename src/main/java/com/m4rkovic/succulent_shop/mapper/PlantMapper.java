@@ -43,6 +43,7 @@ public class PlantMapper {
                 .bloomColor(StringUtils.isNotBlank(dto.getBloomColor()) ?
                         Color.valueOf(dto.getBloomColor().toUpperCase()) : null)
                 .category(category)
+                .careInstructions(dto.getCareInstructions())
                 .build();
     }
 
@@ -63,6 +64,7 @@ public class PlantMapper {
                         entity.getBloomColor().name() : null)
                 .categoryId(entity.getCategory() != null ?
                         entity.getCategory().getId() : null)
+                .careInstructions(entity.getCareInstructions())
                 .build();
     }
 
@@ -88,6 +90,9 @@ public class PlantMapper {
         }
         if (dto.getPlantPhoto() != null) {
             entity.setPlantPhoto(dto.getPlantPhoto());
+        }
+        if (dto.getCareInstructions() != null) {
+            entity.setCareInstructions(dto.getCareInstructions());
         }
     }
 

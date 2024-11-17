@@ -26,8 +26,10 @@ public class Plant extends AbstractEntity {
     private Category category;
     private Color primaryColor;
     private Color secondaryColor;
-
     @Nullable
     private Color bloomColor;
+
+    @Column(length = 2000)
+    private String careInstructions;
 
 }

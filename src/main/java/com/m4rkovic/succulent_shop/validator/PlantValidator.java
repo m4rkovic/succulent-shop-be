@@ -18,6 +18,7 @@ public class PlantValidator {
 
         validateBasicFields(plantDto, violations);
         validateEnums(plantDto, violations);
+        validateCareInstructions(plantDto, violations);
 
         return violations;
     }
@@ -62,6 +63,13 @@ public class PlantValidator {
             } catch (IllegalArgumentException e) {
                 violations.add("Invalid bloom color!");
             }
+        }
+    }
+
+    private void validateCareInstructions(PlantDTO plantDto, List<String> violations) {
+        if (plantDto.getCareInstructions() != null &&
+                plantDto.getCareInstructions().length() > 2000) {
+            violations.add("Care instructions cannot exceed 2000 characters!");
         }
     }
 }

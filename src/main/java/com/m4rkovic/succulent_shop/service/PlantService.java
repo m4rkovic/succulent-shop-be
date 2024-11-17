@@ -20,7 +20,7 @@ public interface PlantService {
 
     public Page<Plant> findAllPaginated(Pageable pageable);
 
-    public Plant save(String name, Color primaryColor, Color secondaryColor, Color bloomColor,
+    public Plant save(String name, String careInstructions, Color primaryColor, Color secondaryColor, Color bloomColor,
                       MultipartFile photoFile, Category category);
 
     @Transactional

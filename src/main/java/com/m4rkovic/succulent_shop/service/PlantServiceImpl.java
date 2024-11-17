@@ -59,10 +59,11 @@ public class PlantServiceImpl implements PlantService {
     // SAVE
     @Override
     @Transactional
-    public Plant save(String name, Color primaryColor, Color secondaryColor, Color bloomColor,
+    public Plant save(String name, String careInstructions, Color primaryColor, Color secondaryColor, Color bloomColor,
                       MultipartFile photoFile, Category category) {
         PlantDTO plantDto = PlantDTO.builder()
                 .name(name)
+                .careInstructions(careInstructions)
                 .primaryColor(primaryColor != null ? primaryColor.name() : null)
                 .secondaryColor(secondaryColor != null ? secondaryColor.name() : null)
                 .bloomColor(bloomColor != null ? bloomColor.name() : null)
@@ -98,6 +99,10 @@ public class PlantServiceImpl implements PlantService {
         existingPlant.setPrimaryColor(Color.valueOf(plantDto.getPrimaryColor()));
         existingPlant.setSecondaryColor(Color.valueOf(plantDto.getSecondaryColor()));
         existingPlant.setBloomColor(Color.valueOf(plantDto.getBloomColor()));
+        if (plantDto.getCareInstructions() != null) {
+            existingPlant.setCareInstructions(plantDto.getCareInstructions());
+        }
+        
         if (plantDto.getPhotoFile() != null && !plantDto.getPhotoFile().isEmpty()) {
             if (existingPlant.getPlantPhoto() != null) {
                 fileStorageService.deleteFile(existingPlant.getPlantPhoto());

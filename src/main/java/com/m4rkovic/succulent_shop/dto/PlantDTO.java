@@ -42,7 +42,10 @@ public class PlantDTO {
     @NotBlank(message = "Secondary color is required!")
     private String secondaryColor;
 
-//    @JsonIgnore
     @NotBlank(message = "Bloom color is required!")
     private String bloomColor;
+
+
+    @NotBlank(message = "Care instructions are required!")
+    private String careInstructions;
 }

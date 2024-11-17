@@ -16,4 +16,6 @@ public class PlantSearchCriteria {
     private String sortBy;
     private String sortDirection;
     private Long categoryId;
+
+    private String careInstructions;
 }
