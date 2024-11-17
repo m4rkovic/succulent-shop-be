@@ -25,10 +25,6 @@ public class BulkProductRequestDTO {
     private String toolType;
     private int potNumber;
     private BigDecimal price;
-
     private int quantity;
-    
-    private boolean active = true;
 
-    private boolean onSale = false;
 }

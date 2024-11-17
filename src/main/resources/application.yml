@@ -4,6 +4,10 @@ spring:
     username: root
     password: password
     driver-class-name: com.mysql.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,6 +18,8 @@ spring:
       database: mysql
       database-platform: org.hibernate.dialect.MySQL8InnoDBDialect
       globally_quoted_identifiers: true
+file:
+  upload-dir: uploads
 
 #logging:
 #  level:

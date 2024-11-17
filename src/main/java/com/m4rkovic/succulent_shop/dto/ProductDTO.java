@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
@@ -53,6 +54,8 @@ public class ProductDTO {
     @Min(value = 0, message = "Quantity cannot be negative")
     private int quantity;
 
+    private MultipartFile photoFile;
+    private String photoUrl;
     private boolean active = true;
     private boolean onSale = false;
 }

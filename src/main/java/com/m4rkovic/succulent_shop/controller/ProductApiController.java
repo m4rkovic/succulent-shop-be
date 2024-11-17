@@ -13,6 +13,7 @@ import com.m4rkovic.succulent_shop.exceptions.InvalidDataException;
 import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
 import com.m4rkovic.succulent_shop.response.BulkImportResponse;
 import com.m4rkovic.succulent_shop.response.ProductResponse;
+import com.m4rkovic.succulent_shop.service.FileStorageService;
 import com.m4rkovic.succulent_shop.service.PlantService;
 import com.m4rkovic.succulent_shop.service.ProductSearchCriteria;
 import com.m4rkovic.succulent_shop.service.ProductService;
@@ -24,14 +25,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
@@ -53,6 +57,7 @@ public class ProductApiController {
     private final ProductService productService;
     private final PlantService plantService;
     private final ProductValidator productValidator;
+    private final FileStorageService fileStorageService;
 
 
     // FIND BY ID
@@ -95,8 +100,10 @@ public class ProductApiController {
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductDTO productDto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductResponse> createProduct(
+            @RequestPart("product") @Valid ProductDTO productDto,
+            @RequestPart(value = "photo", required = false) MultipartFile photoFile) {
         log.debug("Creating new product with data: {}", productDto);
 
         try {
@@ -130,7 +137,8 @@ public class ProductApiController {
                     toolType,
                     productDto.getPotNumber(),
                     productDto.getPrice(),
-                    productDto.getQuantity()
+                    productDto.getQuantity(),
+                    photoFile
             );
 
             ProductResponse response = ProductResponse.fromEntity(savedProduct);
@@ -148,6 +156,19 @@ public class ProductApiController {
         }
     }
 
+    @GetMapping("/photos/{fileName}")
+    public ResponseEntity<Resource> getPhoto(@PathVariable String fileName) {
+        try {
+            Resource resource = fileStorageService.loadFileAsResource(fileName);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) // or determine dynamically
+                    .body(resource);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
     // UPDATE
     @Operation(summary = "Update a product")
     @ApiResponses(value = {
@@ -155,12 +176,20 @@ public class ProductApiController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponse> updateProduct(
             @Parameter(description = "Product ID", required = true)
             @PathVariable Long id,
-            @Valid @RequestBody ProductDTO productDto) {
+            @RequestPart("product") @Valid ProductDTO productDto,
+            @RequestPart(value = "photo", required = false) MultipartFile photoFile) {
+
         log.debug("Updating product {} with data: {}", id, productDto);
+
+        // Set the photo file in the DTO if provided
+        if (photoFile != null && !photoFile.isEmpty()) {
+            productDto.setPhotoFile(photoFile);
+        }
+
         Product updatedProduct = productService.update(id, productDto);
         return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
     }

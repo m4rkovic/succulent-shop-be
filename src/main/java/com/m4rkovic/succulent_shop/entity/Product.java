@@ -68,6 +68,8 @@ public class Product extends AbstractEntity {
     @ManyToMany(mappedBy = "products")
     private List<Order> orders = new ArrayList<>();
 
+    @Column(name = "photo_url", nullable = true)
+    private String photoUrl;
     private BigDecimal price;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

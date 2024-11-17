@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,6 +35,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductValidationService validationService;
     private final ProductSearchService searchService;
     private final ProductMapper productMapper;
+
+    private final FileStorageService fileStorageService;
 
     private static final BigDecimal SALE_DISCOUNT = new BigDecimal("0.20");
 
@@ -86,15 +89,21 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product save(Plant plant, String productName, String productDesc, PotSize potSize,
                         ProductType productType, boolean isPot, PotType potType, ToolType toolType,
-                        int potNumber, BigDecimal price, int quantity) {
+                        int potNumber, BigDecimal price, int quantity, MultipartFile photoFile) {
         ProductDTO productDTO = createProductDTO(plant, productName, productDesc, potSize, productType,
                 isPot, potType, toolType, potNumber, price, quantity);
+        productDTO.setPhotoFile(photoFile);
 
         validationService.validateProductDTO(productDTO);
 
         try {
             Product product = productMapper.toEntity(productDTO);
             product.setPlant(plant);
+
+            if (photoFile != null && !photoFile.isEmpty()) {
+                String fileName = fileStorageService.storeFile(photoFile);
+                product.setPhotoUrl(fileName);
+            }
 
             if (product.isOnSale()) {
                 product.setPrice(calculateActualPrice(price, true));
@@ -151,10 +160,15 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteById(Long productId) {
         log.debug("Deleting product with id: {}", productId);
-        findById(productId);
+
+        Product product = findById(productId);
 
         try {
+            if (product.getPhotoUrl() != null) {
+                fileStorageService.deleteFile(product.getPhotoUrl());
+            }
             productRepository.deleteById(productId);
+
         } catch (DataIntegrityViolationException e) {
             throw new DeleteException(
                     String.format("Cannot delete product with id: %d due to existing references", productId), e);
@@ -217,7 +231,8 @@ public class ProductServiceImpl implements ProductService {
                         toolType,
                         request.getPotNumber(),
                         request.getPrice(),
-                        request.getQuantity()
+                        request.getQuantity(),
+                        null
                 );
 
                 importedProducts.add(savedProduct);
@@ -248,26 +263,8 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductDTO createProductDTO(Plant plant, String productName, String productDesc,
                                         PotSize potSize, ProductType productType, boolean isPot,
-                                        PotType potType, ToolType toolType, int potNumber, BigDecimal price) {
-        return ProductDTO.builder()
-                .productName(productName)
-                .productDesc(productDesc)
-                .potSize(potSize != null ? potSize.name() : null)
-                .productType(productType != null ? productType.name() : null)
-                .isPot(isPot)
-                .potType(potType != null ? potType.name() : null)
-                .toolType(toolType != null ? toolType.name() : null)
-                .potNumber(potNumber)
-                .price(price)
-                .plantId(plant != null ? plant.getId() : null)
-                .build();
-    }
-
-
-    private ProductDTO createProductDTO(Plant plant, String productName, String productDesc,
-                                        PotSize potSize, ProductType productType, boolean isPot,
                                         PotType potType, ToolType toolType, int potNumber,
-                                        BigDecimal price, int quantity/*, boolean active, boolean onSale*/) {
+                                        BigDecimal price, int quantity) {
         return ProductDTO.builder()
                 .productName(productName)
                 .productDesc(productDesc)
@@ -280,8 +277,6 @@ public class ProductServiceImpl implements ProductService {
                 .price(price)
                 .plantId(plant != null ? plant.getId() : null)
                 .quantity(quantity)
-//                .active(active)
-//                .onSale(onSale)
                 .build();
     }
 
