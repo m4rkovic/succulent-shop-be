@@ -129,7 +129,10 @@ public class ProductApiController {
                     potType,
                     toolType,
                     productDto.getPotNumber(),
-                    productDto.getPrice()
+                    productDto.getPrice(),
+                    productDto.getQuantity(),
+                    productDto.isActive(),
+                    productDto.isOnSale()
             );
 
             ProductResponse response = ProductResponse.fromEntity(savedProduct);
@@ -238,6 +241,10 @@ public class ProductApiController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String potSize,
             @RequestParam(required = false) Boolean isPot,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) Boolean onSale,
+            @RequestParam(required = false) Integer minQuantity,
+            @RequestParam(required = false) Integer maxQuantity,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "asc") String sortDirection,
             @RequestParam(defaultValue = "0") int page,
@@ -252,6 +259,10 @@ public class ProductApiController {
                 .maxPrice(maxPrice)
                 .potSize(potSize != null ? PotSize.valueOf(potSize.toUpperCase()) : null)
                 .isPot(isPot)
+                .active(active)
+                .onSale(onSale)
+                .minQuantity(minQuantity)
+                .maxQuantity(maxQuantity)
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();

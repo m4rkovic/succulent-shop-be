@@ -49,4 +49,10 @@ public class ProductDTO {
 
     @Pattern(regexp = "^(PRUNER|SHOVEL|RAKE|WATERCAN)$", message = "Invalid tool type")
     private String toolType;
+
+    @Min(value = 0, message = "Quantity cannot be negative")
+    private int quantity;
+
+    private boolean active = true;
+    private boolean onSale = false;
 }

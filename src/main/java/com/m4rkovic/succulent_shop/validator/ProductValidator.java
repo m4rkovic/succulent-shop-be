@@ -35,6 +35,9 @@ public class ProductValidator {
         if (StringUtils.isBlank(productDTO.getProductDesc())) {
             violations.add("Product description cannot be empty");
         }
+        if (productDTO.getQuantity() < 0) {
+            violations.add("Quantity cannot be negative");
+        }
     }
 
     public void validateAndThrow(ProductDTO productDTO) {

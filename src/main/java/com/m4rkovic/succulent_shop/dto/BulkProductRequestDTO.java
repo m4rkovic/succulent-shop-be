@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
 @Data
@@ -23,4 +25,10 @@ public class BulkProductRequestDTO {
     private String toolType;
     private int potNumber;
     private BigDecimal price;
+
+    private int quantity;
+    
+    private boolean active = true;
+
+    private boolean onSale = false;
 }

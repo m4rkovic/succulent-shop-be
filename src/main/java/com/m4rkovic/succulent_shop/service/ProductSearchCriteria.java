@@ -22,4 +22,8 @@ public class ProductSearchCriteria {
     private Boolean isPot;
     private String sortBy;
     private String sortDirection;
+    private Boolean active;
+    private Boolean onSale;
+    private Integer minQuantity;
+    private Integer maxQuantity;
 }

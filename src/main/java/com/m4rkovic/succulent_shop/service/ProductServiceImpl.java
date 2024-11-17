@@ -62,9 +62,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product save(Plant plant, String productName, String productDesc, PotSize potSize,
                         ProductType productType, boolean isPot, PotType potType, ToolType toolType,
-                        int potNumber, BigDecimal price) {
+                        int potNumber, BigDecimal price, int quantity, boolean active, boolean onSale) {
         ProductDTO productDTO = createProductDTO(plant, productName, productDesc, potSize, productType,
-                isPot, potType, toolType, potNumber, price);
+                isPot, potType, toolType, potNumber, price, quantity, active, onSale);
 
         validationService.validateProductDTO(productDTO);
 
@@ -163,7 +163,10 @@ public class ProductServiceImpl implements ProductService {
                         potType,
                         toolType,
                         request.getPotNumber(),
-                        request.getPrice()
+                        request.getPrice(),
+                        request.getQuantity(),
+                        request.isActive(),
+                        request.isOnSale()
                 );
 
                 importedProducts.add(savedProduct);
@@ -206,6 +209,28 @@ public class ProductServiceImpl implements ProductService {
                 .potNumber(potNumber)
                 .price(price)
                 .plantId(plant != null ? plant.getId() : null)
+                .build();
+    }
+
+
+    private ProductDTO createProductDTO(Plant plant, String productName, String productDesc,
+                                        PotSize potSize, ProductType productType, boolean isPot,
+                                        PotType potType, ToolType toolType, int potNumber,
+                                        BigDecimal price, int quantity, boolean active, boolean onSale) {
+        return ProductDTO.builder()
+                .productName(productName)
+                .productDesc(productDesc)
+                .potSize(potSize != null ? potSize.name() : null)
+                .productType(productType != null ? productType.name() : null)
+                .isPot(isPot)
+                .potType(potType != null ? potType.name() : null)
+                .toolType(toolType != null ? toolType.name() : null)
+                .potNumber(potNumber)
+                .price(price)
+                .plantId(plant != null ? plant.getId() : null)
+                .quantity(quantity)
+                .active(active)
+                .onSale(onSale)
                 .build();
     }
 }

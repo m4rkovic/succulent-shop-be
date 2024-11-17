@@ -55,6 +55,16 @@ public class Product extends AbstractEntity {
     @Column(nullable = true)
     private ToolType toolType;
 
+
+    @Column(nullable = false)
+    private int quantity;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(nullable = false)
+    private boolean onSale = false;
+
     @ManyToMany(mappedBy = "products")
     private List<Order> orders = new ArrayList<>();
 

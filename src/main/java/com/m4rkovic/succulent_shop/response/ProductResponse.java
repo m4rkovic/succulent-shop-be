@@ -28,6 +28,9 @@ public class ProductResponse {
     private ProductType productType;
     private ToolType toolType;
     private BigDecimal price;
+    private int quantity;
+    private boolean active;
+    private boolean onSale;
 
     public static ProductResponse fromEntity(Product product) {
         ProductResponse response = new ProductResponse();
@@ -42,6 +45,9 @@ public class ProductResponse {
         response.setPotNumber(product.getPotNumber());
         response.setToolType(product.getToolType());
         response.setPrice(product.getPrice());
+        response.setQuantity(product.getQuantity());
+        response.setActive(product.isActive());
+        response.setOnSale(product.isOnSale());
         return response;
     }
 }

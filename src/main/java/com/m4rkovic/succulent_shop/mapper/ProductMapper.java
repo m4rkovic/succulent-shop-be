@@ -57,6 +57,9 @@ public class ProductMapper {
                 .potNumber(dto.getPotNumber())
                 .price(dto.getPrice())
                 .plant(plant)
+                .quantity(dto.getQuantity())
+                .active(dto.isActive())
+                .onSale(dto.isOnSale())
                 .build();
     }
 
@@ -76,6 +79,9 @@ public class ProductMapper {
                 .toolType(entity.getToolType() != null ? entity.getToolType().name() : null)
                 .potNumber(entity.getPotNumber())
                 .price(entity.getPrice())
+                .quantity(entity.getQuantity())
+                .active(entity.isActive())
+                .onSale(entity.isOnSale())
                 .plantId(entity.getPlant() != null ? entity.getPlant().getId() : null)
                 .build();
     }
@@ -88,30 +94,45 @@ public class ProductMapper {
         if (StringUtils.isNotBlank(dto.getProductName())) {
             entity.setProductName(dto.getProductName());
         }
+
         if (StringUtils.isNotBlank(dto.getProductDesc())) {
             entity.setProductDesc(dto.getProductDesc());
         }
-        if (StringUtils.isNotBlank(dto.getPotSize())) {
-            entity.setPotSize(PotSize.valueOf(dto.getPotSize().toUpperCase()));
+
+        entity.setPot(dto.isPot());
+        if (dto.isPot()) {
+            if (StringUtils.isNotBlank(dto.getPotSize())) {
+                entity.setPotSize(PotSize.valueOf(dto.getPotSize().toUpperCase()));
+            }
+            if (StringUtils.isNotBlank(dto.getPotType())) {
+                entity.setPotType(PotType.valueOf(dto.getPotType().toUpperCase()));
+            }
+            entity.setPotNumber(dto.getPotNumber());
+        } else {
+            entity.setPotSize(null);
+            entity.setPotType(null);
+            entity.setPotNumber(0);
         }
+
         if (StringUtils.isNotBlank(dto.getProductType())) {
             entity.setProductType(ProductType.valueOf(dto.getProductType().toUpperCase()));
         }
-        if (StringUtils.isNotBlank(dto.getPotType())) {
-            entity.setPotType(PotType.valueOf(dto.getPotType().toUpperCase()));
-        }
+
         if (StringUtils.isNotBlank(dto.getToolType())) {
             entity.setToolType(ToolType.valueOf(dto.getToolType().toUpperCase()));
         }
-        if (dto.isPot()) {
-            entity.setPotNumber(dto.getPotNumber());
-        }
+
         if (dto.getPrice() != null) {
             entity.setPrice(dto.getPrice());
         }
+
         if (dto.getPlantId() != null) {
             entity.setPlant(plantService.findById(dto.getPlantId()));
         }
+
+        entity.setQuantity(dto.getQuantity());
+        entity.setActive(dto.isActive());
+        entity.setOnSale(dto.isOnSale());
     }
 
     public List<ProductDTO> toDTOList(List<Product> entities) {

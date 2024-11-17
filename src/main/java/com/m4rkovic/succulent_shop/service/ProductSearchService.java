@@ -32,6 +32,10 @@ public class ProductSearchService {
                 criteria.getMaxPrice(),
                 criteria.getPotSize(),
                 criteria.getIsPot(),
+                criteria.getActive(),
+                criteria.getOnSale(),
+                criteria.getMinQuantity(),
+                criteria.getMaxQuantity(),
                 pageable
         );
     }
