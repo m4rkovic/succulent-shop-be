@@ -35,17 +35,15 @@ public class OrderMapper {
         List<Product> products = dto.getProductsIds() != null ?
                 productService.findProductsByIds(dto.getProductsIds()) : Collections.emptyList();
 
-        BigDecimal orderTotal = products.stream()
-                .map(Product::getPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return Order.builder()
+        Order order = Order.builder()
                 .user(user)
                 .address(dto.getAddress())
                 .deliveryMethod(dto.getDeliveryMethod())
-                .orderTotal(orderTotal)
                 .products(products)
                 .build();
+
+        order.calculateTotals(); // Calculate all totals before saving
+        return order;
     }
 
     public OrderDTO toDTO(Order entity) {
@@ -62,6 +60,7 @@ public class OrderMapper {
                 .build();
     }
 
+
     public void updateEntityFromDTO(Order entity, OrderDTO dto) {
         if (entity == null || dto == null) {
             return;
@@ -76,12 +75,9 @@ public class OrderMapper {
         if (dto.getProductsIds() != null && !dto.getProductsIds().isEmpty()) {
             List<Product> products = productService.findProductsByIds(dto.getProductsIds());
             entity.setProducts(products);
-            // Update order total when products change
-            BigDecimal orderTotal = products.stream()
-                    .map(Product::getPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            entity.setOrderTotal(orderTotal);
         }
+
+        entity.calculateTotals(); // Recalculate totals after any changes
     }
 
     public List<OrderDTO> toDTOList(List<Order> entities) {

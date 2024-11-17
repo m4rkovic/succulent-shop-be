@@ -121,13 +121,11 @@ public class OrderApiController {
         try {
             orderValidator.validateAndThrow(orderDto);
 
-            // Validate and get user
             User user = userService.findById(orderDto.getUserId());
             if (user == null) {
                 throw new ResourceNotFoundException("User not found with id: " + orderDto.getUserId());
             }
 
-            // Validate and get products
             List<Product> products = productService.findProductsByIds(orderDto.getProductsIds());
             if (products.isEmpty()) {
                 throw new ResourceNotFoundException("No products found for the provided ids");
@@ -136,18 +134,11 @@ public class OrderApiController {
                 throw new InvalidDataException("Some products from the provided list were not found");
             }
 
-            // Calculate order total
-            BigDecimal orderTotal = products.stream()
-                    .map(Product::getPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            // Create order with validated data
             Order savedOrder = orderService.save(
                     orderDto.getUserId(),
                     orderDto.getProductsIds(),
                     orderDto.getAddress(),
-                    orderDto.getDeliveryMethod(),
-                    orderTotal
+                    orderDto.getDeliveryMethod()
             );
 
             OrderResponse response = OrderResponse.fromEntity(savedOrder);

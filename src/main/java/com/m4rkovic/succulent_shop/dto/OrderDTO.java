@@ -1,5 +1,6 @@
 package com.m4rkovic.succulent_shop.dto;
 
+import com.m4rkovic.succulent_shop.enumerator.DeliveryMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,5 +27,6 @@ public class OrderDTO {
     private String address;
 
     @NotBlank(message = "Delivery method is required")
-    private String deliveryMethod;
+    private DeliveryMethod deliveryMethod;
+    
 }

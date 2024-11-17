@@ -1,6 +1,7 @@
 package com.m4rkovic.succulent_shop.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.m4rkovic.succulent_shop.enumerator.DeliveryMethod;
 import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,14 @@ public class Order extends AbstractEntity {
     private String orderCode;
     private String orderUpdateLog;
     private String address;
-    private String deliveryMethod;
+    @Enumerated(EnumType.STRING)
+    private DeliveryMethod deliveryMethod;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal subtotal; // New field for order total before delivery
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal deliveryCost;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal orderTotal;
@@ -61,7 +69,28 @@ public class Order extends AbstractEntity {
             orderUpdateLog = "Order created at: " + orderDate + "\n";
         }
         if (deliveryMethod == null) {
-            deliveryMethod = "Standard Delivery";
+            deliveryMethod = DeliveryMethod.STANDARD_DELIVERY;
         }
     }
+
+    public void calculateTotals() {
+        this.subtotal = products.stream()
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        this.deliveryCost = calculateDeliveryCost();
+        this.orderTotal = subtotal.add(deliveryCost);
+    }
+
+    private BigDecimal calculateDeliveryCost() {
+        if (subtotal.compareTo(new BigDecimal("100")) >= 0) {
+            return BigDecimal.ZERO; // Free delivery for orders over 100
+        }
+
+        return switch (deliveryMethod) {
+            case STANDARD_DELIVERY -> new BigDecimal("5");
+            case EXPRESS_DELIVERY -> new BigDecimal("8");
+        };
+    }
+
 }

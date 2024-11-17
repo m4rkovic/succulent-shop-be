@@ -1,6 +1,7 @@
 package com.m4rkovic.succulent_shop.response;
 
 import com.m4rkovic.succulent_shop.entity.Order;
+import com.m4rkovic.succulent_shop.enumerator.DeliveryMethod;
 import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +23,9 @@ public class OrderResponse {
     private String orderCode;
     private String orderUpdateLog;
     private String address;
-    private String deliveryMethod;
+    private DeliveryMethod deliveryMethod;
+    private BigDecimal subtotal;
+    private BigDecimal deliveryCost;
     private BigDecimal orderTotal;
     private UserResponse user;
     private List<ProductResponse> products;
@@ -37,6 +40,10 @@ public class OrderResponse {
         response.setOrderUpdateLog(order.getOrderUpdateLog());
         response.setAddress(order.getAddress());
         response.setDeliveryMethod(order.getDeliveryMethod());
+        response.setOrderTotal(order.getOrderTotal());
+        response.setDeliveryMethod(order.getDeliveryMethod());
+        response.setSubtotal(order.getSubtotal());
+        response.setDeliveryCost(order.getDeliveryCost());
         response.setOrderTotal(order.getOrderTotal());
         response.setUser(UserResponse.fromEntity(order.getUser()));
         response.setProducts(order.getProducts().stream()

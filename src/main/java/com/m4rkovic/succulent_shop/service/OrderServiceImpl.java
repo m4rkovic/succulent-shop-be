@@ -3,6 +3,7 @@ package com.m4rkovic.succulent_shop.service;
 import com.m4rkovic.succulent_shop.entity.Order;
 import com.m4rkovic.succulent_shop.entity.Product;
 import com.m4rkovic.succulent_shop.entity.User;
+import com.m4rkovic.succulent_shop.enumerator.DeliveryMethod;
 import com.m4rkovic.succulent_shop.enumerator.OrderStatus;
 import com.m4rkovic.succulent_shop.exceptions.CreationException;
 import com.m4rkovic.succulent_shop.exceptions.DeleteException;
@@ -77,27 +78,24 @@ public class OrderServiceImpl implements OrderService {
     // SAVE
     @Override
     @Transactional
-    public Order save(Long userId, List<Long> productIds, String address, String deliveryMethod, BigDecimal orderTotal) {
+    public Order save(Long userId, List<Long> productIds, String address, DeliveryMethod deliveryMethod) { // Updated parameter type
         log.debug("Creating a new order for user with id: {}", userId);
 
         try {
-            // Get user and products
             User user = userService.findById(userId);
             List<Product> products = productService.findProductsByIds(productIds);
 
-            // Create initial order
             Order order = Order.builder()
                     .user(user)
                     .products(products)
                     .address(address)
                     .deliveryMethod(deliveryMethod)
-                    .orderTotal(orderTotal)
-                    .build();  // All other fields will be set by @PrePersist
+                    .build();
 
-            // Save first time to get ID
+            // Calculate totals before saving
+            order.calculateTotals();
             order = orderRepository.save(order);
 
-            // Generate and set order code
             String datePart = new SimpleDateFormat("yyyyMMdd").format(new Date());
             String orderCode = "ORD" + order.getId() + datePart;
             order.setOrderCode(orderCode);
@@ -109,6 +107,7 @@ public class OrderServiceImpl implements OrderService {
             throw new CreationException("Failed to create order due to data integrity violation", e);
         }
     }
+    
 
     // UPDATE ORDER STATUS
     @Override

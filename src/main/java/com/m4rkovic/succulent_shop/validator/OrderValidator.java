@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Component
@@ -31,13 +30,6 @@ public class OrderValidator {
             violations.add("User ID cannot be null");
         }
 
-//        if (orderDTO.getOrderDate() == null || orderDTO.getOrderDate().after(new Date())) {
-//            violations.add("Order date cannot be in the future or null");
-//        }
-//
-//        if (StringUtils.isBlank(orderDTO.getOrderCode())) {
-//            violations.add("Order code cannot be empty");
-//        }
     }
 
     private void validateAddress(OrderDTO orderDTO, List<String> violations) {
@@ -52,9 +44,10 @@ public class OrderValidator {
         }
     }
 
+
     private void validateDeliveryMethod(OrderDTO orderDTO, List<String> violations) {
-        if (StringUtils.isBlank(orderDTO.getDeliveryMethod())) {
-            violations.add("Delivery method cannot be empty");
+        if (orderDTO.getDeliveryMethod() == null) {
+            violations.add("Delivery method cannot be null");
         }
     }
     public void validateAndThrow(OrderDTO orderDTO) {
