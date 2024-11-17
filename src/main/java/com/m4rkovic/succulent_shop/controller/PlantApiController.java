@@ -107,6 +107,7 @@ public class PlantApiController {
 
             Plant savedPlant = plantService.save(
                     plantDto.getName(),
+                    plantDto.getCareInstructions(),
                     primaryColor,
                     secondaryColor,
                     bloomColor,
