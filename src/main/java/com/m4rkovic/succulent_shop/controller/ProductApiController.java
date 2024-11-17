@@ -130,9 +130,7 @@ public class ProductApiController {
                     toolType,
                     productDto.getPotNumber(),
                     productDto.getPrice(),
-                    productDto.getQuantity(),
-                    productDto.isActive(),
-                    productDto.isOnSale()
+                    productDto.getQuantity()
             );
 
             ProductResponse response = ProductResponse.fromEntity(savedProduct);

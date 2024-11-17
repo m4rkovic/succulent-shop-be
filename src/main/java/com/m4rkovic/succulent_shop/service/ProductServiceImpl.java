@@ -86,9 +86,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product save(Plant plant, String productName, String productDesc, PotSize potSize,
                         ProductType productType, boolean isPot, PotType potType, ToolType toolType,
-                        int potNumber, BigDecimal price, int quantity, boolean active, boolean onSale) {
+                        int potNumber, BigDecimal price, int quantity) {
         ProductDTO productDTO = createProductDTO(plant, productName, productDesc, potSize, productType,
-                isPot, potType, toolType, potNumber, price, quantity, active, onSale);
+                isPot, potType, toolType, potNumber, price, quantity);
 
         validationService.validateProductDTO(productDTO);
 
@@ -217,9 +217,7 @@ public class ProductServiceImpl implements ProductService {
                         toolType,
                         request.getPotNumber(),
                         request.getPrice(),
-                        request.getQuantity(),
-                        request.isActive(),
-                        request.isOnSale()
+                        request.getQuantity()
                 );
 
                 importedProducts.add(savedProduct);
@@ -269,7 +267,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductDTO createProductDTO(Plant plant, String productName, String productDesc,
                                         PotSize potSize, ProductType productType, boolean isPot,
                                         PotType potType, ToolType toolType, int potNumber,
-                                        BigDecimal price, int quantity, boolean active, boolean onSale) {
+                                        BigDecimal price, int quantity/*, boolean active, boolean onSale*/) {
         return ProductDTO.builder()
                 .productName(productName)
                 .productDesc(productDesc)
@@ -282,8 +280,8 @@ public class ProductServiceImpl implements ProductService {
                 .price(price)
                 .plantId(plant != null ? plant.getId() : null)
                 .quantity(quantity)
-                .active(active)
-                .onSale(onSale)
+//                .active(active)
+//                .onSale(onSale)
                 .build();
     }
 

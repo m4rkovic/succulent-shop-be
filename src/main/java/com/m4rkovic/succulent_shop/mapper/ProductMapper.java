@@ -58,8 +58,8 @@ public class ProductMapper {
                 .price(dto.getPrice())
                 .plant(plant)
                 .quantity(dto.getQuantity())
-                .active(dto.isActive())
-                .onSale(dto.isOnSale())
+                .active(true)
+                .onSale(false)
                 .build();
     }
 

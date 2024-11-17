@@ -26,7 +26,7 @@ public interface ProductService {
 
     public Product save(Plant plant, String productName, String productDesc, PotSize potSize,
                         ProductType productType, boolean isPot, PotType potType, ToolType toolType,
-                        int potNumber, BigDecimal price, int quantity, boolean active, boolean onSale);
+                        int potNumber, BigDecimal price, int quantity);
 
     Product update(Long id, ProductDTO productDTO);
 
