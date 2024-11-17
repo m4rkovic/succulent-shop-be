@@ -30,6 +30,8 @@ public interface ProductService {
 
     Product update(Long id, ProductDTO productDTO);
 
+    public Product updateSaleStatus(Long id, boolean onSale);
+
     public void deleteById(Long productId);
 
     public List<Product> bulkImport(List<BulkProductRequestDTO> products);

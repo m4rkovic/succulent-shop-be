@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,18 +35,33 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSearchService searchService;
     private final ProductMapper productMapper;
 
+    private static final BigDecimal SALE_DISCOUNT = new BigDecimal("0.20");
+
     // FIND ALL
     @Override
     @Transactional(readOnly = true)
     public List<Product> findAll() {
         log.debug("Retrieving all products!");
-        return productRepository.findAll();
+        List<Product> products = productRepository.findAll();
+        products.forEach(product -> {
+            if (product.isOnSale()) {
+                product.setPrice(calculateActualPrice(product.getPrice(), true));
+            }
+        });
+        return products;
     }
 
+    // FIND ALL PAGINATED
     @Override
     @Transactional(readOnly = true)
     public Page<Product> findAllPaginated(Pageable pageable) {
-        return productRepository.findAll(pageable);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        productPage.forEach(product -> {
+            if (product.isOnSale()) {
+                product.setPrice(calculateActualPrice(product.getPrice(), true));
+            }
+        });
+        return productPage;
     }
 
     // FIND BY ID
@@ -53,8 +69,16 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Product findById(Long id) {
         log.debug("Retrieving product with id: {}", id);
-        return productRepository.findById(id)
+
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product not found with id: %d", id)));
+
+        // Calculate the actual price if the product is on sale
+        if (product.isOnSale()) {
+            product.setPrice(calculateActualPrice(product.getPrice(), true));
+        }
+
+        return product;
     }
 
     // SAVE
@@ -71,6 +95,11 @@ public class ProductServiceImpl implements ProductService {
         try {
             Product product = productMapper.toEntity(productDTO);
             product.setPlant(plant);
+
+            if (product.isOnSale()) {
+                product.setPrice(calculateActualPrice(price, true));
+            }
+
             return productRepository.save(product);
         } catch (DataIntegrityViolationException e) {
             throw new CreationException("Failed to create product due to data integrity violation", e);
@@ -86,11 +115,35 @@ public class ProductServiceImpl implements ProductService {
         validationService.validateProductDTO(productDTO);
 
         try {
+            BigDecimal originalPrice = productDTO.getPrice() != null ?
+                    productDTO.getPrice() : existingProduct.getPrice();
+
             productMapper.updateEntityFromDTO(existingProduct, productDTO);
+
+            if (existingProduct.isOnSale()) {
+                existingProduct.setPrice(calculateActualPrice(originalPrice, true));
+            } else {
+                existingProduct.setPrice(originalPrice);
+            }
+
             return productRepository.save(existingProduct);
         } catch (DataIntegrityViolationException e) {
             throw new UpdateException(String.format("Failed to update product with id: %d", id), e);
         }
+    }
+
+    @Override
+    @Transactional
+    public Product updateSaleStatus(Long id, boolean onSale) {
+        Product product = findById(id);
+        product.setOnSale(onSale);
+
+        BigDecimal basePrice = onSale ?
+                product.getPrice().divide(BigDecimal.ONE.subtract(SALE_DISCOUNT), 2, RoundingMode.HALF_UP) :
+                product.getPrice();
+        product.setPrice(calculateActualPrice(basePrice, onSale));
+
+        return productRepository.save(product);
     }
 
     // DELETE BY ID
@@ -233,4 +286,13 @@ public class ProductServiceImpl implements ProductService {
                 .onSale(onSale)
                 .build();
     }
+
+    private BigDecimal calculateActualPrice(BigDecimal originalPrice, boolean isOnSale) {
+        if (!isOnSale) {
+            return originalPrice;
+        }
+        BigDecimal discount = originalPrice.multiply(SALE_DISCOUNT);
+        return originalPrice.subtract(discount).setScale(2, RoundingMode.HALF_UP);
+    }
+
 }

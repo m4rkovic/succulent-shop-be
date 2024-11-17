@@ -167,6 +167,17 @@ public class ProductApiController {
         return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
     }
 
+    // SALE STATUS UPDATE
+    @PatchMapping("/{id}/sale-status")
+    public ResponseEntity<ProductResponse> updateSaleStatus(
+            @PathVariable Long id,
+            @RequestParam boolean onSale) {
+        Product updatedProduct = productService.updateSaleStatus(id, onSale);
+        return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
+    }
+
+
+    // BULK IMPORT
     @Operation(summary = "Bulk import products")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Products imported successfully"),
