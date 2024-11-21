@@ -70,14 +70,14 @@ public class OrderServiceImpl implements OrderService {
     public Page<Order> findByUserIdPaginated(Long userId, Pageable pageable) {
         log.debug("Retrieving all orders for user with id: {} with pagination! Page: {}, Size: {}",
                 userId, pageable.getPageNumber(), pageable.getPageSize());
-        userService.findById(userId); // Verify user exists
+        userService.findById(userId);
         return orderRepository.findByUserId(userId, pageable);
     }
 
     // SAVE
     @Override
     @Transactional
-    public Order save(Long userId, List<Long> productIds, String address, DeliveryMethod deliveryMethod) { // Updated parameter type
+    public Order save(Long userId, List<Long> productIds, String address, DeliveryMethod deliveryMethod) {
         log.debug("Creating a new order for user with id: {}", userId);
 
         try {
@@ -91,7 +91,6 @@ public class OrderServiceImpl implements OrderService {
                     .deliveryMethod(deliveryMethod)
                     .build();
 
-            // Calculate totals before saving
             order.calculateTotals();
             order = orderRepository.save(order);
 
@@ -99,7 +98,6 @@ public class OrderServiceImpl implements OrderService {
             String orderCode = "ORD" + order.getId() + datePart;
             order.setOrderCode(orderCode);
 
-            // Save again with the order code
             return orderRepository.save(order);
 
         } catch (DataIntegrityViolationException e) {

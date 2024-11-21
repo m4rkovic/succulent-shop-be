@@ -63,7 +63,6 @@ public class OrderApiController {
     }
 
     // FIND ALL
-
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<List<OrderResponse>> getAllOrdersWithoutPagination() {
@@ -95,15 +94,6 @@ public class OrderApiController {
         Page<OrderResponse> responsePage = orderPage.map(OrderResponse::fromEntity);
         return ResponseEntity.ok(responsePage);
     }
-
-
-//    @GetMapping("/user/{userId}/all")
-//    public ResponseEntity<List<OrderResponse>> getAllOrdersByUser(
-//            @PathVariable Long userId) {
-//        List<Order> orders = orderService.findByUserId(userId);
-//        return ResponseEntity.ok(orders.stream()
-//                .map(OrderResponse::fromEntity)
-//                .collect(Collectors.toList()));
 
     // FIND BY USER ID
     @Operation(summary = "Get all orders for a specific user")

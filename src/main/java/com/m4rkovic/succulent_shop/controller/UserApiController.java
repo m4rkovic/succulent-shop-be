@@ -83,10 +83,8 @@ public class UserApiController {
         log.debug("Creating new user with data: {}", userDto);
 
         try {
-            // Use the simpler validation method for creation
             validationService.validateUserDTO(userDto);
 
-            // Convert Role enum
             Role role = userDto.getRole() != null ?
                     Role.valueOf(userDto.getRole().toUpperCase()) : null;
 
@@ -114,42 +112,6 @@ public class UserApiController {
         }
     }
 
-//    @PostMapping
-//    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserDTO userDto) {
-//        log.debug("Creating new user with data: {}", userDto);
-//
-//        try {
-//            // Validate using validation service
-//            validationService.validateUserDTO(userDto);
-//
-//            // Convert Role enum
-//            Role role = userDto.getRole() != null ?
-//                    Role.valueOf(userDto.getRole().toUpperCase()) : null;
-//
-//            User savedUser = userService.save(
-//                    userDto.getEmail(),
-//                    userDto.getFirstname(),
-//                    userDto.getLastname(),
-//                    userDto.getAddress(),
-//                    role,
-//                    userDto.getPassword()
-//            );
-//
-//            UserResponse response = UserResponse.fromEntity(savedUser);
-//            URI location = ServletUriComponentsBuilder
-//                    .fromCurrentRequest()
-//                    .path("/{id}")
-//                    .buildAndExpand(savedUser.getId())
-//                    .toUri();
-//
-//            return ResponseEntity.created(location).body(response);
-//
-//        } catch (IllegalArgumentException e) {
-//            log.error("Invalid enum value in user creation request", e);
-//            throw new InvalidDataException("Invalid user data: " + e.getMessage());
-//        }
-//    }
-
     // UPDATE
     @Operation(summary = "Update a user")
     @ApiResponses(value = {
@@ -164,7 +126,6 @@ public class UserApiController {
             @Valid @RequestBody UserDTO userDto) {
         log.debug("Updating user {} with data: {}", id, userDto);
 
-        // The service now handles the validation with isUpdate flag
         User updatedUser = userService.update(id, userDto);
         return ResponseEntity.ok(UserResponse.fromEntity(updatedUser));
     }

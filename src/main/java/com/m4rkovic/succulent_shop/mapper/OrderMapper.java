@@ -42,7 +42,7 @@ public class OrderMapper {
                 .products(products)
                 .build();
 
-        order.calculateTotals(); // Calculate all totals before saving
+        order.calculateTotals();
         return order;
     }
 
@@ -77,7 +77,7 @@ public class OrderMapper {
             entity.setProducts(products);
         }
 
-        entity.calculateTotals(); // Recalculate totals after any changes
+        entity.calculateTotals();
     }
 
     public List<OrderDTO> toDTOList(List<Order> entities) {
