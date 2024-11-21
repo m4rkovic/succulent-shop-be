@@ -41,7 +41,7 @@ public class Order extends AbstractEntity {
     private DeliveryMethod deliveryMethod;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal subtotal; // New field for order total before delivery
+    private BigDecimal subtotal;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal deliveryCost;

@@ -29,9 +29,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -62,7 +63,21 @@ public class OrderApiController {
     }
 
     // FIND ALL
+
     @Operation(summary = "Get all orders")
+    @GetMapping("/all")
+    public ResponseEntity<List<OrderResponse>> getAllOrdersWithoutPagination() {
+        log.debug("Fetching all orders without pagination");
+
+        List<Order> orders = orderService.findAll();
+        List<OrderResponse> responseList = orders.stream()
+                .map(OrderResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
+    }
+
+    @Operation(summary = "Get all orders with pagination")
     @GetMapping
     public ResponseEntity<Page<OrderResponse>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -81,6 +96,14 @@ public class OrderApiController {
         return ResponseEntity.ok(responsePage);
     }
 
+
+//    @GetMapping("/user/{userId}/all")
+//    public ResponseEntity<List<OrderResponse>> getAllOrdersByUser(
+//            @PathVariable Long userId) {
+//        List<Order> orders = orderService.findByUserId(userId);
+//        return ResponseEntity.ok(orders.stream()
+//                .map(OrderResponse::fromEntity)
+//                .collect(Collectors.toList()));
 
     // FIND BY USER ID
     @Operation(summary = "Get all orders for a specific user")
