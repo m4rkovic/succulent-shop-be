@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
@@ -27,5 +28,9 @@ public class Rating extends AbstractEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
     private String comment;
+
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
     private Date createdDate = new Date();
 }

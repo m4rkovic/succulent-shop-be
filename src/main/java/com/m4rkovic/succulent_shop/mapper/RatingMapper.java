@@ -35,7 +35,6 @@ public class RatingMapper {
                 .user(user)
                 .score(dto.getScore())
                 .comment(dto.getComment())
-                .createdDate(dto.getCreatedDate() != null ? dto.getCreatedDate() : new Date())
                 .build();
     }
 
@@ -49,7 +48,6 @@ public class RatingMapper {
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .score(entity.getScore())
                 .comment(entity.getComment())
-                .createdDate(entity.getCreatedDate())
                 .build();
     }
 
@@ -69,9 +67,6 @@ public class RatingMapper {
         }
         if (dto.getUserId() != null) {
             entity.setUser(userService.findById(dto.getUserId()));
-        }
-        if (dto.getCreatedDate() != null) {
-            entity.setCreatedDate(dto.getCreatedDate());
         }
     }
 

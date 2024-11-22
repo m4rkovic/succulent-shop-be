@@ -28,7 +28,7 @@ public class Order extends AbstractEntity {
 
     @Column(length = 2000)
     @Builder.Default
-    private OrderStatus orderStatus = OrderStatus.ORDERED;  // Default value
+    private OrderStatus orderStatus = OrderStatus.ORDERED;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

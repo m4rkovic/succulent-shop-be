@@ -51,23 +51,27 @@ public class RatingService {
 
     // SAVE
     @Transactional
-    public Rating save(User user, Product product, int score, String comment, Date createdDate) {
+    public Rating save(User user, Product product, int score, String comment) {
+        RatingDTO ratingDTO = RatingDTO.builder()
+                .productId(product != null ? product.getId() : null)
+                .userId(user != null ? user.getId() : null)
+                .score(score)
+                .comment(comment)
+                .build();
 
-        RatingDTO ratingDTO = createRatingDTO(product, user, score, comment, createdDate);
         validationService.validateRatingDto(ratingDTO);
 
         try {
             Rating rating = ratingMapper.toEntity(ratingDTO);
             rating.setUser(user);
             rating.setProduct(product);
-            rating.setCreatedDate(new Date());
+            // createdDate will be set automatically by @CreationTimestamp
 
             return ratingRepository.save(rating);
         } catch (DataIntegrityViolationException e) {
             throw new CreationException("Failed to create rating due to data integrity violation", e);
         }
     }
-
 
     // DELETE BY ID
     @Transactional
@@ -83,13 +87,4 @@ public class RatingService {
         }
     }
 
-    private RatingDTO createRatingDTO(Product product, User user, int score, String comment, Date createdDate) {
-        return RatingDTO.builder()
-                .productId(product != null ? product.getId() : null)
-                .userId(user != null ? user.getId() : null)
-                .score(score)
-                .comment(comment)
-                .createdDate(createdDate != null ? createdDate : new Date())
-                .build();
-    }
 }

@@ -14,8 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class RatingResponse {
     private Long id;
-//    private UserResponse user;  // Assuming you have a UserResponse class
-    private ProductResponse product;  // Assuming you have a ProductResponse class
+    private ProductResponse product;
     private int score;
     private String comment;
     private Date createdDate;
@@ -23,8 +22,7 @@ public class RatingResponse {
     public static RatingResponse fromEntity(Rating rating) {
         return RatingResponse.builder()
                 .id(rating.getId())
-//                .user(UserResponse.fromEntity(rating.getUser()))  // Convert User entity to UserResponse
-                .product(ProductResponse.fromEntity(rating.getProduct()))  // Convert Product entity to ProductResponse
+                .product(ProductResponse.fromEntity(rating.getProduct()))
                 .score(rating.getScore())
                 .comment(rating.getComment())
                 .createdDate(rating.getCreatedDate())

@@ -23,7 +23,6 @@ public class RatingValidator {
 
         validateBasicFields(ratingDTO, violations);
         validateRelations(ratingDTO, violations);
-        validateDates(ratingDTO, violations);
 
         return violations;
     }
@@ -56,17 +55,6 @@ public class RatingValidator {
         // Validate product
         if (ratingDTO.getProductId() == null) {
             violations.add("Product cannot be null!");
-        }
-    }
-
-    private void validateDates(RatingDTO ratingDTO, List<String> violations) {
-        if (ratingDTO.getCreatedDate() == null) {
-            violations.add("Created date cannot be null!");
-        } else {
-            // Check if created date is not in the future
-            if (ratingDTO.getCreatedDate().after(new Date())) {
-                violations.add("Created date cannot be in the future!");
-            }
         }
     }
 

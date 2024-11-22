@@ -71,8 +71,7 @@ public class RatingApiController {
                     user,
                     product,
                     ratingDto.getScore(),
-                    ratingDto.getComment(),
-                    new Date()
+                    ratingDto.getComment()
             );
 
             RatingResponse response = RatingResponse.fromEntity(savedRating);

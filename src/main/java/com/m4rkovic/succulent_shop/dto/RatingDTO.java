@@ -27,6 +27,4 @@ public class RatingDTO {
     @Size(max = 500, message = "Comment cannot exceed 500 characters")
     private String comment;
 
-    @PastOrPresent(message = "Created date cannot be in the future")
-    private Date createdDate;
 }
