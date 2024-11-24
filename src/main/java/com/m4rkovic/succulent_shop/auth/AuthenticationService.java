@@ -31,17 +31,20 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.ROLE_USER)
+                .address(request.getAddress()) // Add address
                 .build();
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
         saveUserToken(savedUser, jwtToken);
 
         return AuthenticationResponse.builder()
+                .id(savedUser.getId())      // Add ID
                 .token(jwtToken)
                 .email(savedUser.getEmail())
                 .firstname(savedUser.getFirstname())
                 .lastname(savedUser.getLastname())
                 .role(savedUser.getRole())
+                .address(savedUser.getAddress()) // Add address
                 .build();
     }
 
@@ -59,11 +62,13 @@ public class AuthenticationService {
         saveUserToken(user, jwtToken);
 
         return AuthenticationResponse.builder()
+                .id(user.getId())           // Add ID
                 .token(jwtToken)
                 .email(user.getEmail())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .role(user.getRole())
+                .address(user.getAddress())  // Add address
                 .build();
     }
 
