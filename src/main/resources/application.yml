@@ -19,7 +19,13 @@ spring:
       database-platform: org.hibernate.dialect.MySQL8InnoDBDialect
       globally_quoted_identifiers: true
 file:
-  upload-dir: uploads
+  upload-dir: ${user.home}/succulent-shop/uploads
+
+  logging:
+    level:
+      org.springframework.web: INFO
+      com.m4rkovic.succulent_shop: DEBUG  # Add this to see more detailed logs for your application
+      org.hibernate.SQL: DEBUG  # Add this if you want to see SQL queries
 
 #logging:
 #  level:

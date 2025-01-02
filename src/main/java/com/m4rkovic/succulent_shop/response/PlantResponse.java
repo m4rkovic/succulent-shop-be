@@ -20,11 +20,18 @@ public class PlantResponse {
     private String careInstructions;
 
     public static PlantResponse formEntity(Plant plant) {
+        // Return null if plant is null
+        if (plant == null) {
+            return null;
+        }
+
         PlantResponse response = new PlantResponse();
         response.setId(plant.getId());
         response.setName(plant.getName());
         response.setPlantPhoto(plant.getPlantPhoto());
-        response.setCategory(CategoryResponse.fromEntity(plant.getCategory()));
+        // Handle potentially null category
+        response.setCategory(plant.getCategory() != null ?
+                CategoryResponse.fromEntity(plant.getCategory()) : null);
         response.setPrimaryColor(plant.getPrimaryColor());
         response.setSecondaryColor(plant.getSecondaryColor());
         response.setBloomColor(plant.getBloomColor());

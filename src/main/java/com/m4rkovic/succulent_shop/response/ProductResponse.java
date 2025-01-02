@@ -28,6 +28,7 @@ public class ProductResponse {
     private ProductType productType;
     private ToolType toolType;
     private BigDecimal price;
+    private String photoUrl;
     private int quantity;
     private boolean active;
     private boolean onSale;
@@ -35,7 +36,13 @@ public class ProductResponse {
     public static ProductResponse fromEntity(Product product) {
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
-        response.setPlant(PlantResponse.formEntity(product.getPlant()));
+
+        if (product.getPlant() != null) {
+            response.setPlant(PlantResponse.formEntity(product.getPlant()));
+        } else {
+            response.setPlant(null); // Explicitly set null for TOOL and DECOR products
+        }
+
         response.setProductName(product.getProductName());
         response.setProductDesc(product.getProductDesc());
         response.setProductType(product.getProductType());
@@ -47,6 +54,7 @@ public class ProductResponse {
         response.setPrice(product.getPrice());
         response.setQuantity(product.getQuantity());
         response.setActive(product.isActive());
+        response.setPhotoUrl(product.getPhotoUrl());
         response.setOnSale(product.isOnSale());
         return response;
     }

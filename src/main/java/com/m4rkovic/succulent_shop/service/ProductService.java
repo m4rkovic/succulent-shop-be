@@ -18,26 +18,29 @@ import java.util.List;
 
 @Service
 public interface ProductService {
+    List<Product> findAll();
 
-    public List<Product> findAll();
+    Page<Product> findAllPaginated(Pageable pageable);
 
-    public Page<Product> findAllPaginated(Pageable pageable);
+    Product findById(Long id);
 
-    public Product findById(Long id);
+    Product save(Long id, Plant plant, String productName, String productDesc, PotSize potSize,
+                 ProductType productType, boolean isPot, PotType potType, ToolType toolType,
+                 int potNumber, BigDecimal price, Integer quantity, MultipartFile photoFile);
 
-    public Product save(Plant plant, String productName, String productDesc, PotSize potSize,
-                        ProductType productType, boolean isPot, PotType potType, ToolType toolType,
-                        int potNumber, BigDecimal price, int quantity, MultipartFile photoFile);
+    Product save(Plant plant, String productName, String productDesc, PotSize potSize,
+                 ProductType productType, boolean isPot, PotType potType, ToolType toolType,
+                 int potNumber, BigDecimal price, Integer quantity, MultipartFile photoFile);
 
     Product update(Long id, ProductDTO productDTO);
 
-    public Product updateSaleStatus(Long id, boolean onSale);
+    Product updateSaleStatus(Long id, boolean onSale);
 
-    public void deleteById(Long productId);
+    void deleteById(Long productId);
 
-    public List<Product> bulkImport(List<BulkProductRequestDTO> products);
+    List<Product> bulkImport(List<BulkProductRequestDTO> products);
 
-    public List<Product> findProductsByIds(List<Long> productIds);
+    List<Product> findProductsByIds(List<Long> productIds);
 
     Page<Product> searchProducts(ProductSearchCriteria criteria, int page, int size);
 }

@@ -17,7 +17,6 @@ public class ProductDTO {
 
     private Long id;
 
-    @NotNull(message = "Plant ID is required")
     private Long plantId;
 
     @NotBlank(message = "Product name is required")

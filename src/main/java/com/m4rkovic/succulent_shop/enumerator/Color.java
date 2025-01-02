@@ -9,6 +9,7 @@ public enum Color {
     BLUE("BLUE-GREEN"),
     YELLOW("YELLOW/GOLD"),
     GREY("GREY/SILVER"),
+    PINK("PINK"),
     NONE("NONE");
 
     private String code;

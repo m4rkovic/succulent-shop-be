@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +42,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -58,6 +58,13 @@ public class ProductApiController {
     private final PlantService plantService;
     private final ProductValidator productValidator;
     private final FileStorageService fileStorageService;
+
+    private static final Set<String> ALLOWED_IMAGE_TYPES = new HashSet<>(Arrays.asList(
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/gif"
+    ));
 
 
     // FIND BY ID
@@ -100,13 +107,35 @@ public class ProductApiController {
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
+    @GetMapping("/photos/{fileName}")
+    public ResponseEntity<Resource> getPhoto(@PathVariable String fileName) {
+        try {
+            Resource resource = fileStorageService.loadFileAsResource(fileName);
+            String contentType = determineContentType(fileName);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000")
+                    .body(resource);
+        } catch (RuntimeException e) {
+            log.error("Error loading photo: {}", fileName, e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponse> createProduct(
             @RequestPart("product") @Valid ProductDTO productDto,
             @RequestPart(value = "photo", required = false) MultipartFile photoFile) {
+
         log.debug("Creating new product with data: {}", productDto);
 
         try {
+            // Validate photo if provided
+            if (photoFile != null && !photoFile.isEmpty()) {
+                validatePhoto(photoFile);
+            }
+
             productValidator.validateAndThrow(productDto);
 
             PotSize potSize = productDto.getPotSize() != null ?
@@ -121,9 +150,12 @@ public class ProductApiController {
                 throw new InvalidDataException("Pot type is required when 'isPot' is true");
             }
 
-            Plant plant = plantService.findById(productDto.getPlantId());
-            if (plant == null) {
-                throw new ResourceNotFoundException("Plant not found with id: " + productDto.getPlantId());
+            Plant plant = null;
+            if (productDto.getPlantId() != null) {
+                plant = plantService.findById(productDto.getPlantId());
+                if (plant == null) {
+                    throw new ResourceNotFoundException("Plant not found with id: " + productDto.getPlantId());
+                }
             }
 
             Product savedProduct = productService.save(
@@ -156,18 +188,36 @@ public class ProductApiController {
         }
     }
 
-    @GetMapping("/photos/{fileName}")
-    public ResponseEntity<Resource> getPhoto(@PathVariable String fileName) {
+    private String determineContentType(String fileName) {
         try {
-            Resource resource = fileStorageService.loadFileAsResource(fileName);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG) // or determine dynamically
-                    .body(resource);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            String extension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+            return switch (extension) {
+                case ".jpg", ".jpeg" -> "image/jpeg";
+                case ".png" -> "image/png";
+                case ".gif" -> "image/gif";
+                default -> "application/octet-stream";
+            };
+        } catch (Exception e) {
+            log.warn("Could not determine content type for filename: {}", fileName);
+            return "application/octet-stream";
         }
     }
 
+    private void validatePhoto(MultipartFile file) {
+        if (file.getSize() > 5 * 1024 * 1024) { // 5MB limit
+            throw new InvalidDataException("File size exceeds 5MB limit");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+            throw new InvalidDataException("Invalid file type. Only JPEG, PNG, and GIF are allowed");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null && originalFilename.contains("..")) {
+            throw new InvalidDataException("Invalid file name");
+        }
+    }
 
     // UPDATE
     @Operation(summary = "Update a product")
@@ -185,13 +235,56 @@ public class ProductApiController {
 
         log.debug("Updating product {} with data: {}", id, productDto);
 
-        // Set the photo file in the DTO if provided
-        if (photoFile != null && !photoFile.isEmpty()) {
-            productDto.setPhotoFile(photoFile);
-        }
+        try {
+            // Validate photo if provided
+            if (photoFile != null && !photoFile.isEmpty()) {
+                validatePhoto(photoFile);
+            }
 
-        Product updatedProduct = productService.update(id, productDto);
-        return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
+            productValidator.validateAndThrow(productDto);
+
+            PotSize potSize = productDto.getPotSize() != null ?
+                    PotSize.valueOf(productDto.getPotSize().toUpperCase()) : null;
+            ProductType productType = ProductType.valueOf(productDto.getProductType().toUpperCase());
+            PotType potType = productDto.getPotType() != null ?
+                    PotType.valueOf(productDto.getPotType().toUpperCase()) : null;
+            ToolType toolType = productDto.getToolType() != null ?
+                    ToolType.valueOf(productDto.getToolType().toUpperCase()) : null;
+
+            if (productDto.isPot() && productDto.getPotType() == null) {
+                throw new InvalidDataException("Pot type is required when 'isPot' is true");
+            }
+
+            Plant plant = null;
+            if (productDto.getPlantId() != null) {
+                plant = plantService.findById(productDto.getPlantId());
+                if (plant == null) {
+                    throw new ResourceNotFoundException("Plant not found with id: " + productDto.getPlantId());
+                }
+            }
+
+            Product updatedProduct = productService.save(
+                    id,  // Pass the ID for update
+                    plant,
+                    productDto.getProductName(),
+                    productDto.getProductDesc(),
+                    potSize,
+                    productType,
+                    productDto.isPot(),
+                    potType,
+                    toolType,
+                    productDto.getPotNumber(),
+                    productDto.getPrice(),
+                    productDto.getQuantity(),
+                    photoFile
+            );
+
+            return ResponseEntity.ok(ProductResponse.fromEntity(updatedProduct));
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid enum value in product update request", e);
+            throw new InvalidDataException("Invalid product data: " + e.getMessage());
+        }
     }
 
     // SALE STATUS UPDATE
