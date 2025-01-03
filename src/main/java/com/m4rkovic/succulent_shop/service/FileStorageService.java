@@ -138,12 +138,10 @@ public class FileStorageService {
     
     public void cleanupOrphanedFiles(Set<String> validFileNames) {
         try {
-            // Get all files in the storage directory
             Files.list(fileStorageLocation)
                     .filter(Files::isRegularFile)
                     .forEach(file -> {
                         String fileName = file.getFileName().toString();
-                        // If the file isn't in our valid files list, delete it
                         if (!validFileNames.contains(fileName)) {
                             try {
                                 Files.delete(file);
