@@ -56,18 +56,18 @@ public class PlantServiceImpl implements PlantService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Plant not found with id: %d", id)));
     }
 
+
     // SAVE
     @Override
     @Transactional
-    public Plant save(String name, String careInstructions, Color primaryColor, Color secondaryColor, Color bloomColor,
-                      MultipartFile photoFile, Category category) {
+    public Plant save(String name, String careInstructions, Color primaryColor,
+                      Color secondaryColor, Color bloomColor, Category category) {
         PlantDTO plantDto = PlantDTO.builder()
                 .name(name)
                 .careInstructions(careInstructions)
                 .primaryColor(primaryColor != null ? primaryColor.name() : null)
                 .secondaryColor(secondaryColor != null ? secondaryColor.name() : null)
                 .bloomColor(bloomColor != null ? bloomColor.name() : null)
-                .photoFile(photoFile)
                 .categoryId(category != null ? category.getId() : null)
                 .build();
 
@@ -76,18 +76,11 @@ public class PlantServiceImpl implements PlantService {
         try {
             Plant plant = plantMapper.toEntity(plantDto);
             plant.setCategory(category);
-
-            if (photoFile != null && !photoFile.isEmpty()) {
-                String fileName = fileStorageService.storeFile(photoFile);
-                plant.setPlantPhoto(fileName);
-            }
-
             return plantRepository.save(plant);
         } catch (DataIntegrityViolationException e) {
             throw new CreationException("Failed to create plant due to data integrity violation", e);
         }
     }
-
 
     // UPDATE
     @Override
@@ -101,15 +94,6 @@ public class PlantServiceImpl implements PlantService {
         existingPlant.setBloomColor(Color.valueOf(plantDto.getBloomColor()));
         if (plantDto.getCareInstructions() != null) {
             existingPlant.setCareInstructions(plantDto.getCareInstructions());
-        }
-        
-        if (plantDto.getPhotoFile() != null && !plantDto.getPhotoFile().isEmpty()) {
-            if (existingPlant.getPlantPhoto() != null) {
-                fileStorageService.deleteFile(existingPlant.getPlantPhoto());
-            }
-
-            String fileName = fileStorageService.storeFile(plantDto.getPhotoFile());
-            existingPlant.setPlantPhoto(fileName);
         }
 
         return plantRepository.save(existingPlant);

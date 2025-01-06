@@ -85,9 +85,7 @@ public class PlantApiController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<PlantResponse> createPlant(
-            @Valid @RequestBody PlantDTO plantDto,
-            @RequestParam(required = false) MultipartFile photoFile) {
+    public ResponseEntity<PlantResponse> createPlant(@Valid @RequestBody PlantDTO plantDto) {
         log.debug("Creating new plant with data: {}", plantDto);
 
         try {
@@ -111,7 +109,6 @@ public class PlantApiController {
                     primaryColor,
                     secondaryColor,
                     bloomColor,
-                    photoFile,
                     category
             );
 
@@ -141,15 +138,11 @@ public class PlantApiController {
     public ResponseEntity<PlantResponse> updatePlant(
             @Parameter(description = "Plant ID", required = true)
             @PathVariable Long id,
-            @Valid @RequestPart("plant") PlantDTO plantDto,
-            @RequestParam(required = false) MultipartFile photoFile) {
+            @Valid @RequestBody PlantDTO plantDto) {
 
         log.debug("Updating plant {} with data: {}", id, plantDto);
 
         try {
-            if (photoFile != null && !photoFile.isEmpty()) {
-                plantDto.setPhotoFile(photoFile);
-            }
             plantValidator.validateAndThrow(plantDto);
 
             try {
