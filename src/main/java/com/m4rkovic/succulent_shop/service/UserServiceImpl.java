@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,6 +117,22 @@ public class UserServiceImpl implements UserService {
 //        return searchService.search(criteria, page, size);
 //    }
 //
+
+
+    // CURRENT USER
+    @Override
+    @Transactional(readOnly = true)
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication instanceof AnonymousAuthenticationToken) {
+            throw new UnauthorizedException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+        return findByEmail(email);
+    }
     private UserDTO createUserDTO(String email, String firstname, String lastname,
                                   String address, Role role, String password) {
         return UserDTO.builder()
