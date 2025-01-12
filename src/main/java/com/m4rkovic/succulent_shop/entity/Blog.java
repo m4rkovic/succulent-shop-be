@@ -39,7 +39,7 @@ public class Blog extends AbstractEntity {
     private User author;
 
     // For SEO purposes
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String slug;
 
     @Column(name = "photo_url", nullable = true)

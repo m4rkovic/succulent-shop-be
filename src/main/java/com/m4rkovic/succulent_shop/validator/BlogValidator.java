@@ -20,7 +20,7 @@ public class BlogValidator {
         validateBasicFields(blogDTO, violations);
         validateContent(blogDTO, violations);
         validateTags(blogDTO, violations);
-        validateSlug(blogDTO, violations);
+//        validateSlug(blogDTO, violations);
         validateAuthor(blogDTO, violations);
 
         return violations;
@@ -71,13 +71,13 @@ public class BlogValidator {
         }
     }
 
-    private void validateSlug(BlogDTO blogDTO, List<String> violations) {
-        if (StringUtils.isBlank(blogDTO.getSlug())) {
-            violations.add("Slug cannot be empty");
-        } else if (!blogDTO.getSlug().matches("^[a-z0-9-]+$")) {
-            violations.add("Slug must contain only lowercase letters, numbers, and hyphens");
-        }
-    }
+//    private void validateSlug(BlogDTO blogDTO, List<String> violations) {
+//        if (StringUtils.isBlank(blogDTO.getSlug())) {
+//            violations.add("Slug cannot be empty");
+//        } else if (!blogDTO.getSlug().matches("^[a-z0-9-]+$")) {
+//            violations.add("Slug must contain only lowercase letters, numbers, and hyphens");
+//        }
+//    }
 
     private void validateAuthor(BlogDTO blogDTO, List<String> violations) {
         // Only validate authorId if it's provided (for updates)

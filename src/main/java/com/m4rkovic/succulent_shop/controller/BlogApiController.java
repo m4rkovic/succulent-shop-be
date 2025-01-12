@@ -67,6 +67,21 @@ public class BlogApiController {
         return ResponseEntity.ok(BlogResponse.fromEntity(blog));
     }
 
+
+    @Operation(summary = "Get a blog by slug")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Blog found"),
+            @ApiResponse(responseCode = "404", description = "Blog not found")
+    })
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<BlogResponse> getBlogBySlug(
+            @Parameter(description = "Blog slug", required = true)
+            @PathVariable String slug) {
+        Blog blog = blogService.findBySlug(slug);
+        blogService.incrementViewCount(blog.getId());
+        return ResponseEntity.ok(BlogResponse.fromEntity(blog));
+    }
+
     @Operation(summary = "Get all blogs")
     @GetMapping
     public ResponseEntity<Page<BlogResponse>> getAllBlogs(
