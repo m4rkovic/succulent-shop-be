@@ -7,29 +7,32 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
     Optional<Blog> findBySlug(String slug);
 
-    @Query("SELECT b FROM Blog b WHERE b.published = true " +
+    @Query("SELECT DISTINCT b FROM Blog b LEFT JOIN b.tags t " +
+            "WHERE b.published = true " +
             "AND (:query IS NULL OR " +
             "LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(b.content) LIKE LOWER(CONCAT('%', :query, '%'))) " +
-            "AND (:tags IS NULL OR b.tags IN :tags)")
+            "AND (COALESCE(:tags, NULL) IS NULL OR t IN :tags)")
     Page<Blog> searchPublishedBlogs(
             @Param("query") String query,
             @Param("tags") List<String> tags,
             Pageable pageable
     );
 
-    @Query("SELECT b FROM Blog b WHERE " +
-            "(:query IS NULL OR " +
+    @Query("SELECT DISTINCT b FROM Blog b LEFT JOIN b.tags t " +
+            "WHERE (:query IS NULL OR " +
             "LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(b.content) LIKE LOWER(CONCAT('%', :query, '%'))) " +
-            "AND (:tags IS NULL OR b.tags IN :tags)")
+            "AND (COALESCE(:tags, NULL) IS NULL OR t IN :tags)")
     Page<Blog> searchAllBlogs(
             @Param("query") String query,
             @Param("tags") List<String> tags,

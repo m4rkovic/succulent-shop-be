@@ -15,16 +15,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDTO {
+//    private Long id;
+//    private String content;
+//    private Long authorId;
+//    private LocalDateTime createdAt;
+//    private boolean approved;
+//    private Integer likeCount;
+
     private Long id;
 
     @NotBlank(message = "Comment content is required")
     @Size(min = 1, max = 1000, message = "Comment must be between 1 and 1000 characters")
     private String content;
 
-    @NotBlank(message = "Author name is required")
-    @Size(min = 2, max = 50, message = "Author name must be between 2 and 50 characters")
-    private String authorName;
-
+    private Long authorId;
     @Email(message = "Please provide a valid email address")
     private String authorEmail;
 

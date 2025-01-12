@@ -1,7 +1,9 @@
 package com.m4rkovic.succulent_shop.mapper;
 
 import com.m4rkovic.succulent_shop.dto.BlogDTO;
+import com.m4rkovic.succulent_shop.dto.CommentDTO;
 import com.m4rkovic.succulent_shop.entity.Blog;
+import com.m4rkovic.succulent_shop.entity.Comment;
 import com.m4rkovic.succulent_shop.entity.User;
 import com.m4rkovic.succulent_shop.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class BlogMapper {
-    private final CommentMapper commentMapper;
     private final UserService userService;
 
     public Blog toEntity(BlogDTO dto) {
@@ -29,6 +30,7 @@ public class BlogMapper {
 
         Blog blog = new Blog();
 
+        // Set basic fields
         blog.setId(dto.getId());
         blog.setTitle(dto.getTitle());
         blog.setSummary(dto.getSummary());
@@ -71,12 +73,28 @@ public class BlogMapper {
                 .viewCount(entity.getViewCount())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
-                .comments(entity.getComments() != null ?
-                        commentMapper.toDTOList(entity.getComments()) :
-                        new ArrayList<>())
-                .metadata(entity.getMetadata() != null ?
-                        new HashMap<>(entity.getMetadata()) :
-                        new HashMap<>())
+                .comments(convertCommentsToSummary(entity.getComments()))
+                .metadata(entity.getMetadata() != null ? new HashMap<>(entity.getMetadata()) : new HashMap<>())
+                .build();
+    }
+
+    private List<CommentDTO> convertCommentsToSummary(List<Comment> comments) {
+        if (comments == null) {
+            return new ArrayList<>();
+        }
+        return comments.stream()
+                .map(this::convertToCommentSummary)
+                .collect(Collectors.toList());
+    }
+
+    private CommentDTO convertToCommentSummary(Comment comment) {
+        return CommentDTO.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .authorId(comment.getAuthor() != null ? comment.getAuthor().getId() : null)
+                .createdAt(comment.getCreatedAt())
+                .approved(comment.isApproved())
+                .likeCount(comment.getLikeCount())
                 .build();
     }
 
