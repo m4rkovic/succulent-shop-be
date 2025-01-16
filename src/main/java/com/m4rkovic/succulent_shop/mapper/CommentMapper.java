@@ -3,6 +3,8 @@ package com.m4rkovic.succulent_shop.mapper;
 import com.m4rkovic.succulent_shop.dto.CommentDTO;
 import com.m4rkovic.succulent_shop.entity.Blog;
 import com.m4rkovic.succulent_shop.entity.Comment;
+import com.m4rkovic.succulent_shop.exceptions.ResourceNotFoundException;
+import com.m4rkovic.succulent_shop.repository.CommentRepository;
 import com.m4rkovic.succulent_shop.service.BlogService;
 import com.m4rkovic.succulent_shop.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
 public class CommentMapper {
     private final BlogService blogService;
     private final UserService userService;
+
+    private final CommentRepository commentRepository;
 
     public Comment toEntity(CommentDTO dto) {
         if (dto == null) {
@@ -96,6 +100,9 @@ public class CommentMapper {
     }
 
     private Comment findParentComment(Long parentId) {
-        throw new UnsupportedOperationException("Parent comment lookup not implemented");
+        return commentRepository.findById(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Parent comment not found with id: %d", parentId)
+                ));
     }
 }

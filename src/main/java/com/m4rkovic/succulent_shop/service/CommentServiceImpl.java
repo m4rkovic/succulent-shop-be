@@ -131,13 +131,21 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public Comment addReply(Long parentId, CommentDTO replyDTO) {
         log.debug("Adding reply to comment id: {}", parentId);
-        Comment parentComment = findById(parentId);
 
-        // Set the blog ID from parent comment
+        Comment parentComment = findById(parentId);
+        if (parentComment == null) {
+            throw new ResourceNotFoundException("Parent comment not found with id: " + parentId);
+        }
+
         replyDTO.setBlogId(parentComment.getBlog().getId());
         replyDTO.setParentCommentId(parentId);
 
-        return save(replyDTO);
+        Comment reply = save(replyDTO);
+
+        parentComment.getReplies().add(reply);
+        commentRepository.save(parentComment);
+
+        return reply;
     }
 
     @Override

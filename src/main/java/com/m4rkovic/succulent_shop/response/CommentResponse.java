@@ -1,6 +1,8 @@
 package com.m4rkovic.succulent_shop.response;
 
 import com.m4rkovic.succulent_shop.entity.Comment;
+import com.m4rkovic.succulent_shop.entity.User;
+import com.m4rkovic.succulent_shop.enumerator.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

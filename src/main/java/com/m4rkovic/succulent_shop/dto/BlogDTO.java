@@ -1,5 +1,6 @@
 package com.m4rkovic.succulent_shop.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,8 @@ public class BlogDTO {
     @Pattern(regexp = "^[a-z0-9-]+$", message = "Slug must contain only lowercase letters, numbers, and hyphens")
     private String slug;
 
+
+    @JsonIgnore
     private MultipartFile photoFile;
     private String photoUrl;
 
@@ -51,6 +54,11 @@ public class BlogDTO {
     private Long viewCount = 0L;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public boolean hasPhoto() {
+        return photoFile != null && !photoFile.isEmpty();
+    }
+
     private List<CommentDTO> comments = new ArrayList<>();
     private Map<String, String> metadata = new HashMap<>();
 }

@@ -131,12 +131,13 @@ public class BlogApiController {
 
         if (photoFile != null && !photoFile.isEmpty()) {
             validatePhoto(photoFile);
+            blogDto.setPhotoFile(photoFile);
         }
 
         blogValidator.validateAndThrow(blogDto);
         Blog savedBlog = blogService.save(blogDto);
-
         BlogResponse response = BlogResponse.fromEntity(savedBlog);
+
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -145,6 +146,50 @@ public class BlogApiController {
 
         return ResponseEntity.created(location).body(response);
     }
+
+    private void validatePhoto(MultipartFile file) {
+        if (file.getSize() > 5 * 1024 * 1024) { // 5MB limit
+            throw new InvalidDataException("File size exceeds 5MB limit");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+            throw new InvalidDataException("Invalid file type. Only JPEG, PNG, and GIF are allowed");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null && originalFilename.contains("..")) {
+            throw new InvalidDataException("Invalid file name");
+        }
+    }
+//    @Operation(summary = "Create a new blog post")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "201", description = "Blog created successfully"),
+//            @ApiResponse(responseCode = "400", description = "Invalid input")
+//    })
+//    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<BlogResponse> createBlog(
+//            @RequestPart("blog") @Valid BlogDTO blogDto,
+//            @RequestPart(value = "photo", required = false) MultipartFile photoFile) {
+//
+//        log.debug("Creating new blog with data: {}", blogDto);
+//
+//        if (photoFile != null && !photoFile.isEmpty()) {
+//            blogDTO.setPhotoFile(photoFile);
+//        }
+//
+//        blogValidator.validateAndThrow(blogDto);
+//        Blog savedBlog = blogService.save(blogDto);
+//
+//        BlogResponse response = BlogResponse.fromEntity(savedBlog);
+//        URI location = ServletUriComponentsBuilder
+//                .fromCurrentRequest()
+//                .path("/{id}")
+//                .buildAndExpand(savedBlog.getId())
+//                .toUri();
+//
+//        return ResponseEntity.created(location).body(response);
+//    }
 
     @Operation(summary = "Update a blog post")
     @ApiResponses(value = {
@@ -225,19 +270,19 @@ public class BlogApiController {
         }
     }
 
-    private void validatePhoto(MultipartFile file) {
-        if (file.getSize() > 5 * 1024 * 1024) { // 5MB limit
-            throw new InvalidDataException("File size exceeds 5MB limit");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
-            throw new InvalidDataException("Invalid file type. Only JPEG, PNG, and GIF are allowed");
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename != null && originalFilename.contains("..")) {
-            throw new InvalidDataException("Invalid file name");
-        }
-    }
+//    private void validatePhoto(MultipartFile file) {
+//        if (file.getSize() > 5 * 1024 * 1024) { // 5MB limit
+//            throw new InvalidDataException("File size exceeds 5MB limit");
+//        }
+//
+//        String contentType = file.getContentType();
+//        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+//            throw new InvalidDataException("Invalid file type. Only JPEG, PNG, and GIF are allowed");
+//        }
+//
+//        String originalFilename = file.getOriginalFilename();
+//        if (originalFilename != null && originalFilename.contains("..")) {
+//            throw new InvalidDataException("Invalid file name");
+//        }
+//    }
 }
