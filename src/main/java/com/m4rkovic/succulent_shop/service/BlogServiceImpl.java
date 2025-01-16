@@ -54,11 +54,10 @@ public class BlogServiceImpl implements BlogService {
         log.debug("Creating new blog post");
         blogValidator.validateAndThrow(blogDTO);
 
-        Blog blog = new Blog(); // Create new Blog instance instead of using mapper
+        Blog blog = new Blog();
         String oldPhotoUrl = blog.getPhotoUrl();
 
         try {
-            // Set basic fields manually
             blog.setTitle(blogDTO.getTitle());
             blog.setSummary(blogDTO.getSummary());
             blog.setExcerpt(blogDTO.getExcerpt());
@@ -70,10 +69,8 @@ public class BlogServiceImpl implements BlogService {
             User currentUser = userService.getCurrentUser();
             blog.setAuthor(currentUser);
 
-            // Handle photo file exactly like in ProductServiceImpl
             if (blogDTO.getPhotoFile() != null && !blogDTO.getPhotoFile().isEmpty()) {
                 try {
-                    // Delete old photo if updating
                     if (oldPhotoUrl != null) {
                         fileStorageService.deleteFile(oldPhotoUrl);
                     }
@@ -91,7 +88,6 @@ public class BlogServiceImpl implements BlogService {
             return savedBlog;
 
         } catch (DataIntegrityViolationException e) {
-            // If saving fails and we uploaded a photo, clean it up
             if (blog.getPhotoUrl() != null && !blog.getPhotoUrl().equals(oldPhotoUrl)) {
                 try {
                     fileStorageService.deleteFile(blog.getPhotoUrl());
@@ -101,11 +97,10 @@ public class BlogServiceImpl implements BlogService {
             }
             throw new InvalidDataException("Failed to create blog post due to data integrity violation", e);
         } catch (Exception e) {
-            // Clean up photo on any other error
             if (blog.getPhotoUrl() != null && !blog.getPhotoUrl().equals(oldPhotoUrl)) {
                 try {
                     fileStorageService.deleteFile(blog.getPhotoUrl());
-                    blog.setPhotoUrl(oldPhotoUrl); // Restore old photo URL
+                    blog.setPhotoUrl(oldPhotoUrl);
                 } catch (Exception ex) {
                     log.error("Failed to cleanup photo after error", ex);
                 }
@@ -113,110 +108,6 @@ public class BlogServiceImpl implements BlogService {
             throw e;
         }
     }
-//    @Override
-//    @Transactional
-//    public Blog save(BlogDTO blogDTO) {
-//        log.debug("Creating new blog post");
-//        blogValidator.validateAndThrow(blogDTO);
-//
-//        Blog blog = blogMapper.toEntity(blogDTO);
-//        String oldPhotoUrl = null;
-//
-//        try {
-//            User currentUser = userService.getCurrentUser();
-//            blog.setAuthor(currentUser);
-//
-//            // Handle photo file
-//            if (blogDTO.getPhotoFile() != null && !blogDTO.getPhotoFile().isEmpty()) {
-//                try {
-//                    String fileName = fileStorageService.storeFile(blogDTO.getPhotoFile());
-//                    blog.setPhotoUrl(fileName);
-//                    log.debug("Stored photo file with name: {}", fileName);
-//                } catch (Exception e) {
-//                    log.error("Failed to store photo file", e);
-//                    throw new FileStorageException("Failed to store photo file: " + e.getMessage());
-//                }
-//            }
-//
-//            Blog savedBlog = blogRepository.save(blog);
-//            log.debug("Created blog with id: {} and photoUrl: {}", savedBlog.getId(), savedBlog.getPhotoUrl());
-//            return savedBlog;
-//
-//        } catch (DataIntegrityViolationException e) {
-//            // If saving fails and we uploaded a photo, clean it up
-//            if (blog.getPhotoUrl() != null) {
-//                try {
-//                    fileStorageService.deleteFile(blog.getPhotoUrl());
-//                } catch (Exception ex) {
-//                    log.error("Failed to cleanup photo after save failure", ex);
-//                }
-//            }
-//            throw new InvalidDataException("Failed to create blog post due to data integrity violation", e);
-//        } catch (Exception e) {
-//            // Clean up photo on any other error
-//            if (blog.getPhotoUrl() != null) {
-//                try {
-//                    fileStorageService.deleteFile(blog.getPhotoUrl());
-//                } catch (Exception ex) {
-//                    log.error("Failed to cleanup photo after error", ex);
-//                }
-//            }
-//            throw e;
-//        }
-//    }
-//    @Override
-//    @Transactional
-//    public Blog save(BlogDTO blogDTO) {
-//        log.debug("Creating new blog post");
-//        blogValidator.validateAndThrow(blogDTO);
-//
-//        Blog blog = blogMapper.toEntity(blogDTO);
-//        String photoUrl = null;
-//
-//        try {
-//            User currentUser = userService.getCurrentUser();
-//            blog.setAuthor(currentUser);
-//
-//            // Handle photo file
-//            if (blogDTO.getPhotoFile() != null && !blogDTO.getPhotoFile().isEmpty()) {
-//                try {
-//                    String fileName = fileStorageService.storeFile(blogDTO.getPhotoFile());
-//                    blog.setPhotoUrl(fileName);
-//                    photoUrl = fileName; // Store the new photo URL
-//                } catch (Exception e) {
-//                    log.error("Failed to store photo file", e);
-//                    throw new FileStorageException("Failed to store photo file: " + e.getMessage());
-//                }
-//            }
-//
-//            // Save the blog
-//            Blog savedBlog = blogRepository.save(blog);
-//            log.debug("Created blog with id: {}", savedBlog.getId());
-//            return savedBlog;
-//
-//        } catch (DataIntegrityViolationException e) {
-//            // If saving fails and we uploaded a photo, clean it up
-//            if (photoUrl != null) {
-//                try {
-//                    fileStorageService.deleteFile(photoUrl);
-//                } catch (Exception ex) {
-//                    log.error("Failed to cleanup photo after save failure", ex);
-//                }
-//            }
-//            throw new InvalidDataException("Failed to create blog post due to data integrity violation", e);
-//        } catch (Exception e) {
-//            // Clean up photo on any other error
-//            if (photoUrl != null) {
-//                try {
-//                    fileStorageService.deleteFile(photoUrl);
-//                } catch (Exception ex) {
-//                    log.error("Failed to cleanup photo after error", ex);
-//                }
-//            }
-//            throw e;
-//        }
-//    }
-
     @Override
     @Transactional
     public Blog update(Long id, BlogDTO blogDTO) {
